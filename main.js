@@ -1,4 +1,4 @@
-const API_BASE = 'https://voice-action-server.onrender.com/api';
+﻿const API_BASE = 'https://voice-action-server.onrender.com/api';
 
 // State Variables
 let appState = {
@@ -108,14 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (themeToggle) {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    themeToggle.textContent = savedTheme === 'light' ? '☀️' : '🌙';
+    themeToggle.textContent = savedTheme === 'light' ? 'â˜€ï¸' : 'ðŸŒ™';
 
     themeToggle.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
-      themeToggle.textContent = next === 'light' ? '☀️' : '🌙';
+      themeToggle.textContent = next === 'light' ? 'â˜€ï¸' : 'ðŸŒ™';
     });
   }
 });
@@ -158,7 +158,7 @@ function toggleRecording() {
     console.log(`[Step ${appState.workflowStep}] Stop recording clicked...`);
     isRecording = false;
     micBtn.classList.remove('recording');
-    statusBar.textContent = "⏳ Processing your voice...";
+    statusBar.textContent = "â³ Processing your voice...";
     statusBar.style.color = 'var(--primary)';
     if(mediaRecorder) mediaRecorder.stop();
   } else {
@@ -166,7 +166,7 @@ function toggleRecording() {
     isRecording = true;
     audioChunks = [];
     micBtn.classList.add('recording');
-    statusBar.textContent = "🔴 Listening... click mic to stop";
+    statusBar.textContent = "ðŸ”´ Listening... click mic to stop";
     statusBar.style.color = 'var(--danger)';
     transcriptBox.style.display = 'block';
     transcriptText.textContent = "...";
@@ -425,7 +425,7 @@ btnAssignNew.addEventListener('click', () => {
       appState.current_manager_name !== 'None' && 
       appState.current_manager_name !== 'Not Assigned') {
     showPopup(
-      '⚠️ Manager Already Assigned',
+      'âš ï¸ Manager Already Assigned',
       `This employee already has a manager: ${appState.current_manager_name}. 
        Are you sure you want to assign a new additional manager?
        If you want to change the existing manager, click Cancel and choose 'Change Existing' instead.`,
@@ -444,7 +444,7 @@ btnChangeExisting.addEventListener('click', () => {
       appState.current_manager_name === 'None' || 
       appState.current_manager_name === 'Not Assigned') {
     showPopup(
-      '⚠️ No Manager Found',
+      'âš ï¸ No Manager Found',
       'This employee has no existing manager to change. Please click "Assign New" to assign a first manager.',
       'OK',
       null,
@@ -482,7 +482,7 @@ function moveToStep3() {
         
         document.getElementById('personNumberInput').value = '';
         document.getElementById('personNumberInput').placeholder = 'Enter Manager Person Number e.g. 2351';
-        document.getElementById('searchBtn').textContent = '🔍 Search Manager';
+        document.getElementById('searchBtn').textContent = 'ðŸ” Search Manager';
         
         statusBar.style.display = 'block';
         statusBar.textContent = "Please speak the Manager's Person Number";
@@ -621,7 +621,7 @@ async function confirmAction() {
     handleError(err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "✅ Confirm";
+    btn.textContent = "âœ… Confirm";
   }
 }
 
@@ -742,7 +742,7 @@ function resetApp() {
   
   document.getElementById('personNumberInput').value = '';
   document.getElementById('personNumberInput').placeholder = 'Enter Person Number e.g. 1405';
-  document.getElementById('searchBtn').textContent = '🔍 Search Employee';
+  document.getElementById('searchBtn').textContent = 'ðŸ” Search Employee';
 
   statusBar.style.display = 'block';
   statusBar.textContent = "Press mic and speak the Person Number";
@@ -887,13 +887,13 @@ function toggleDeptRecording() {
     if (isDeptRecording) {
         isDeptRecording = false;
         deptMicBtn.classList.remove('recording');
-        deptStatusBar.textContent = "⏳ Processing voice...";
+        deptStatusBar.textContent = "â³ Processing voice...";
         if(mediaRecorder) mediaRecorder.stop();
     } else {
         isDeptRecording = true;
         audioChunks = [];
         deptMicBtn.classList.add('recording');
-        deptStatusBar.textContent = "🔴 Listening for department name...";
+        deptStatusBar.textContent = "ðŸ”´ Listening for department name...";
         deptTranscriptBox.style.display = 'block';
         deptTranscriptText.textContent = "...";
 
@@ -1018,5 +1018,6 @@ function closePopup() {
   const overlay = document.getElementById('popup-overlay');
   if (overlay) overlay.remove();
 }
+
 
 
