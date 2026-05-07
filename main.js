@@ -903,9 +903,13 @@ async function fetchDepartments() {
         console.error("Failed to fetch departments:", err);
         const select = document.getElementById('dept-select');
         if (select) {
-            let errorMsg = "Error loading departments";
-            if (err.message && err.message.includes('Error')) errorMsg = err.message;
-            select.innerHTML = `<option value="">${errorMsg}</option>`;
+            // Try to extract a clean message if it's JSON
+            let displayMsg = err.message;
+            try {
+                const parsed = JSON.parse(err.message.replace('HTTP Error 500: ', ''));
+                displayMsg = parsed.error || err.message;
+            } catch(e) {}
+            select.innerHTML = `<option value="">Error: ${displayMsg}</option>`;
         }
     }
 }
