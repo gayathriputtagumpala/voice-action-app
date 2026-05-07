@@ -17,7 +17,11 @@ let appState = {
   currentManagerNumber: null,
   manager_display_name: null,
   effective_date: new Date().toISOString().split('T')[0],
-  audioBlob: null
+  audioBlob: null,
+  currentAction: 'assign_manager', // 'assign_manager' or 'change_department'
+  current_department: null,
+  new_department: null,
+  available_departments: []
 };
 
 // DOM Elements
@@ -285,12 +289,25 @@ async function fetchEmployeeDetails() {
         appState.current_manager_name = data.currentManagerName || "None";
         appState.currentManagerNumber = data.currentManagerNumber;
         appState.managerSelfLink = data.managerSelfLink;
+        appState.current_department = data.DepartmentName;
 
         console.log("Employee found:", appState.worker_display_name);
         
         // Update UI for Step 2
         empName.textContent = appState.worker_display_name;
         empNo.textContent = appState.person_number;
+
+        // Show/Hide relevant info based on action
+        const empDeptRow = document.getElementById('emp-dept-row');
+        const empCurrentDept = document.getElementById('emp-current-dept');
+        if (appState.currentAction === 'change_department') {
+            if (empDeptRow) empDeptRow.style.display = 'flex';
+            if (empCurrentDept) empCurrentDept.textContent = appState.current_department;
+            // Fetch available departments for Step 3
+            fetchDepartments();
+        } else {
+            if (empDeptRow) empDeptRow.style.display = 'none';
+        }
         
         // Avatar Initials
         const empAvatar = document.getElementById('emp-avatar');
@@ -343,7 +360,12 @@ function moveToStep2() {
     transcriptBox.style.display = 'none';
     voiceConfirmBox.style.display = 'none';
     
-    step2Actions.style.display = 'flex';
+    if (appState.currentAction === 'change_department') {
+        step2Actions.style.display = 'none';
+        setTimeout(() => moveToStep3(), 500); // Auto-proceed for department change as there's only one sub-action
+    } else {
+        step2Actions.style.display = 'flex';
+    }
 }
 
 btnAssignNew.addEventListener('click', () => {
@@ -386,25 +408,34 @@ function moveToStep3() {
     console.log("Moving to Step 3...");
     appState.workflowStep = 3;
     updateStepDots(3);
-    mainTitle.textContent = "Enter Manager Person Number";
     
+    step2Actions.style.display = 'none';
     const subTitle = document.getElementById('sub-title');
     subTitle.textContent = "Step 3 of 4";
     subTitle.style.display = 'block';
-    
-    step2Actions.style.display = 'none';
-    
-    document.getElementById('input-toggle-container').style.display = 'block';
-    document.getElementById('mic-section').style.display = 'flex';
-    setInputMethod(window.inputMethod || 'voice');
-    
-    document.getElementById('personNumberInput').value = '';
-    document.getElementById('personNumberInput').placeholder = 'Enter Manager Person Number e.g. 2351';
-    document.getElementById('searchBtn').textContent = '🔍 Search Manager';
-    
-    statusBar.style.display = 'block';
-    statusBar.textContent = "Please speak the Manager's Person Number";
-    statusBar.style.color = 'var(--text-muted)';
+
+    if (appState.currentAction === 'change_department') {
+        mainTitle.textContent = "Select New Department";
+        document.getElementById('input-toggle-container').style.display = 'none';
+        document.getElementById('typeSection').style.display = 'none';
+        document.getElementById('voiceSection').style.display = 'none';
+        
+        document.getElementById('dept-selection-box').style.display = 'block';
+        setDeptInputMethod('voice');
+    } else {
+        mainTitle.textContent = "Enter Manager Person Number";
+        document.getElementById('input-toggle-container').style.display = 'block';
+        document.getElementById('mic-section').style.display = 'flex';
+        setInputMethod(window.inputMethod || 'voice');
+        
+        document.getElementById('personNumberInput').value = '';
+        document.getElementById('personNumberInput').placeholder = 'Enter Manager Person Number e.g. 2351';
+        document.getElementById('searchBtn').textContent = '🔍 Search Manager';
+        
+        statusBar.style.display = 'block';
+        statusBar.textContent = "Please speak the Manager's Person Number";
+        statusBar.style.color = 'var(--text-muted)';
+    }
     
     transcriptBox.style.display = 'none';
 }
@@ -462,45 +493,79 @@ function moveToStep4() {
     document.querySelector('.tab-btn[data-target="screen-confirmation"]').removeAttribute('disabled');
     
     document.getElementById('conf-employee').textContent = `${appState.worker_display_name} (No: ${appState.person_number})`;
-    document.getElementById('conf-manager').textContent = `${appState.manager_display_name} (No: ${appState.manager_person_number})`;
+    
+    const targetLabel = document.getElementById('conf-target-label');
+    const targetValue = document.getElementById('conf-target-value');
+    const typeRow = document.getElementById('conf-type-row');
+    const actionLabel = document.querySelector('.confirm-card .glass-card-row .value');
+
+    if (appState.currentAction === 'change_department') {
+        actionLabel.textContent = "Change Department";
+        targetLabel.textContent = "New Department";
+        targetValue.textContent = appState.new_department;
+        if (typeRow) typeRow.style.display = 'none';
+    } else {
+        actionLabel.textContent = "Assign Manager";
+        targetLabel.textContent = "New Manager";
+        targetValue.textContent = `${appState.manager_display_name} (No: ${appState.manager_person_number})`;
+        if (typeRow) typeRow.style.display = 'flex';
+    }
+
     document.getElementById('conf-date').textContent = appState.effective_date;
 
     switchTab('screen-confirmation');
 }
 
-// Confirmation Buttons
-document.getElementById('btn-confirm').addEventListener('click', assignManager);
-document.getElementById('btn-cancel').addEventListener('click', resetApp);
-document.getElementById('btn-edit').addEventListener('click', resetApp);
-
-async function assignManager() {
-  console.log("Assign Manager clicked...");
+async function confirmAction() {
+  const action = appState.currentAction === 'change_department' ? 'Change Department' : 'Assign Manager';
+  console.log(`${action} clicked...`);
   const btn = document.getElementById('btn-confirm');
   btn.disabled = true;
-  btn.textContent = "Assigning...";
+  btn.textContent = "Processing...";
   
   try {
-    console.log("Calling POST /api/oracle/assign...");
-    const res = await fetch(`${API_BASE}/oracle/assign`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        encodedPersonId: appState.encodedPersonId,
-        WorkRelationshipId: appState.WorkRelationshipId,
-        encodedAssignmentId: appState.encodedAssignmentId,
-        ManagerAssignmentId: appState.ManagerAssignmentId,
-        managerSelfLink: appState.managerSelfLink,
-        effectiveDate: appState.effective_date
-      })
-    });
-    
-    if (!res.ok) throw new Error("Failed to assign manager via Oracle API.");
-    
-    console.log("Assign Success!");
-    saveAuditLog("Success");
-    showResult(true, `Manager assigned successfully for Person ${appState.person_number}.`);
+    if (appState.currentAction === 'change_department') {
+        console.log("Calling PATCH /api/oracle/department...");
+        const res = await fetch(`${API_BASE}/oracle/department`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            encodedPersonId: appState.encodedPersonId,
+            WorkRelationshipId: appState.WorkRelationshipId,
+            encodedAssignmentId: appState.encodedAssignmentId,
+            DepartmentName: appState.new_department,
+            EffectiveDate: appState.effective_date
+          })
+        });
+        
+        if (!res.ok) throw new Error("Failed to change department via Oracle API.");
+        
+        console.log("Department Success!");
+        saveAuditLog("Success");
+        showResult(true, `Department changed to ${appState.new_department} successfully for Person ${appState.person_number}.`);
+    } else {
+        console.log("Calling POST /api/oracle/assign...");
+        const res = await fetch(`${API_BASE}/oracle/assign`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            encodedPersonId: appState.encodedPersonId,
+            WorkRelationshipId: appState.WorkRelationshipId,
+            encodedAssignmentId: appState.encodedAssignmentId,
+            ManagerAssignmentId: appState.ManagerAssignmentId,
+            managerSelfLink: appState.managerSelfLink,
+            effectiveDate: appState.effective_date
+          })
+        });
+        
+        if (!res.ok) throw new Error("Failed to assign manager via Oracle API.");
+        
+        console.log("Assign Success!");
+        saveAuditLog("Success");
+        showResult(true, `Manager assigned successfully for Person ${appState.person_number}.`);
+    }
   } catch (err) {
-    console.error("Assign Error:", err);
+    console.error("Action Error:", err);
     handleError(err.message);
   } finally {
     btn.disabled = false;
@@ -601,7 +666,11 @@ function resetApp() {
     current_manager_name: null,
     manager_display_name: null,
     effective_date: new Date().toISOString().split('T')[0],
-    audioBlob: null
+    audioBlob: null,
+    currentAction: 'assign_manager',
+    current_department: null,
+    new_department: null,
+    available_departments: []
   };
   audioChunks = [];
   
@@ -636,6 +705,8 @@ function resetApp() {
   employeeDetailsBox.style.display = 'none';
   step2Actions.style.display = 'none';
   managerDetailsBox.style.display = 'none';
+  document.getElementById('dept-selection-box').style.display = 'none';
+  document.getElementById('emp-dept-row').style.display = 'none';
   
   document.querySelector('.tab-btn[data-target="screen-confirmation"]').setAttribute('disabled', 'true');
   document.querySelector('.tab-btn[data-target="screen-result"]').setAttribute('disabled', 'true');
@@ -704,10 +775,143 @@ window.showToast = function(message) {
 }
 
 window.startAssignManager = function() {
+  appState.currentAction = 'assign_manager';
   showAllTabs();
   resetApp();
   switchTab('screen-home');
 }
+
+window.startChangeDepartment = function() {
+  appState.currentAction = 'change_department';
+  showAllTabs();
+  resetApp();
+  switchTab('screen-home');
+}
+
+// Department Logic
+window.setDeptInputMethod = function(method) {
+    if (method === 'type') {
+        document.getElementById('dept-type-section').style.display = 'block';
+        document.getElementById('dept-voice-section').style.display = 'none';
+        document.getElementById('deptTypeBtn').classList.add('active');
+        document.getElementById('deptVoiceBtn').classList.remove('active');
+    } else {
+        document.getElementById('dept-type-section').style.display = 'none';
+        document.getElementById('dept-voice-section').style.display = 'block';
+        document.getElementById('deptVoiceBtn').classList.add('active');
+        document.getElementById('deptTypeBtn').classList.remove('active');
+    }
+};
+
+async function fetchDepartments() {
+    try {
+        const res = await fetch(`${API_BASE}/oracle/departments`);
+        const data = await res.json();
+        appState.available_departments = data.departments || [];
+        
+        const select = document.getElementById('dept-select');
+        select.innerHTML = '<option value="">Select a department...</option>';
+        appState.available_departments.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.DepartmentName;
+            opt.textContent = d.DepartmentName;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error("Failed to fetch departments:", err);
+    }
+}
+
+const deptMicBtn = document.getElementById('dept-mic-btn');
+const deptStatusBar = document.getElementById('dept-status-bar');
+const deptTranscriptBox = document.getElementById('dept-transcript-box');
+const deptTranscriptText = document.getElementById('dept-transcript-text');
+
+let isDeptRecording = false;
+
+deptMicBtn.addEventListener('click', toggleDeptRecording);
+
+function toggleDeptRecording() {
+    if (isDeptRecording) {
+        isDeptRecording = false;
+        deptMicBtn.classList.remove('recording');
+        deptStatusBar.textContent = "⏳ Processing voice...";
+        if(mediaRecorder) mediaRecorder.stop();
+    } else {
+        isDeptRecording = true;
+        audioChunks = [];
+        deptMicBtn.classList.add('recording');
+        deptStatusBar.textContent = "🔴 Listening for department name...";
+        deptTranscriptBox.style.display = 'block';
+        deptTranscriptText.textContent = "...";
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.start();
+            
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = () => {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+              sendDeptToSarvam(audioBlob);
+              stream.getTracks().forEach(track => track.stop());
+            };
+          }).catch(err => {
+            console.error("Mic error:", err);
+            isDeptRecording = false;
+            deptMicBtn.classList.remove('recording');
+        });
+    }
+}
+
+async function sendDeptToSarvam(audioBlob) {
+    try {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'audio.webm');
+        formData.append('language_code', langSelect.value);
+        
+        const res = await fetch(`${API_BASE}/sarvam/stt`, { method: 'POST', body: formData });
+        const data = await res.json();
+        const transcript = data.transcript;
+        
+        deptTranscriptText.textContent = transcript || "Could not understand.";
+        if (transcript) {
+            // Fuzzy match or direct match department
+            const cleanTranscript = transcript.toLowerCase().replace(/[^\w\s]/g, '').trim();
+            const match = appState.available_departments.find(d => 
+                cleanTranscript.includes(d.DepartmentName.toLowerCase()) ||
+                d.DepartmentName.toLowerCase().includes(cleanTranscript)
+            );
+            
+            if (match) {
+                appState.new_department = match.DepartmentName;
+                document.getElementById('dept-select').value = match.DepartmentName;
+                deptStatusBar.textContent = `Matched: ${match.DepartmentName}`;
+                deptStatusBar.style.color = '#10b981';
+            } else {
+                deptStatusBar.textContent = "No matching department found. Please try again or select from list.";
+                deptStatusBar.style.color = '#ef4444';
+            }
+        }
+    } catch (err) {
+        console.error("STT Error:", err);
+    }
+}
+
+document.getElementById('btn-proceed-dept-confirm').addEventListener('click', () => {
+    const val = document.getElementById('dept-select').value;
+    if (!val) {
+        alert("Please select or speak a department name.");
+        return;
+    }
+    appState.new_department = val;
+    moveToStep4();
+});
+
+// Update event listener for confirm button as we renamed the function
+document.getElementById('btn-confirm').removeEventListener('click', assignManager);
+document.getElementById('btn-confirm').addEventListener('click', confirmAction);
 
 // Popup function
 function showPopup(title, message, confirmText, cancelText, onConfirm, onCancel) {

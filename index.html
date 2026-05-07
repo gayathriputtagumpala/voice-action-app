@@ -59,9 +59,9 @@
               <div class="card-description">Assign or change reporting manager for an employee</div>
             </div>
             
-            <div class="action-card coming-soon" onclick="showToast('This feature is coming soon!')">
-              <div class="card-badge badge-coming-soon">SOON</div>
-              <div class="card-icon icon-dark">🏢</div>
+            <div class="action-card active" onclick="startChangeDepartment()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon icon-purple">🏢</div>
               <div class="card-title">Change Department</div>
               <div class="card-description">Move employee to a different department</div>
             </div>
@@ -178,6 +178,10 @@
                <span class="label">Status</span>
                <span id="emp-manager-badge" class="badge"></span>
              </div>
+             <div id="emp-dept-row" class="glass-card-row" style="display:none;">
+               <span class="label">Current Department</span>
+               <span id="emp-current-dept" class="value"></span>
+             </div>
           </div>
 
           <!-- Step 2 Actions -->
@@ -196,6 +200,41 @@
                 </div>
              </div>
              <button id="btn-proceed-confirm" class="btn btn-primary mt-4">Proceed to Confirm</button>
+          </div>
+
+          <!-- Department Selection (Step 3 for Dept Flow) -->
+          <div id="dept-selection-box" class="employee-card" style="display:none;">
+             <h2 class="step-title" style="font-size:18px;">Select New Department</h2>
+             <div class="input-toggle" id="dept-input-toggle">
+               <button class="toggle-btn" onclick="setDeptInputMethod('type')" id="deptTypeBtn">⌨️ Type</button>
+               <button class="toggle-btn active" onclick="setDeptInputMethod('voice')" id="deptVoiceBtn">🎤 Voice</button>
+             </div>
+             
+             <div id="dept-type-section" style="display:none; width:100%;">
+               <select id="dept-select" class="person-input" style="letter-spacing: normal; font-size: 16px; margin-bottom: 20px;">
+                 <option value="">Select a department...</option>
+               </select>
+             </div>
+
+             <div id="dept-voice-section" style="width:100%;">
+               <div class="mic-container" style="margin: 20px 0;">
+                 <button id="dept-mic-btn" class="mic-btn" style="width: 72px; height: 72px;">
+                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28">
+                     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                     <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                     <line x1="12" y1="19" x2="12" y2="23"></line>
+                     <line x1="8" y1="23" x2="16" y2="23"></line>
+                   </svg>
+                 </button>
+               </div>
+               <p class="status-bar" id="dept-status-bar">Press mic and speak department name</p>
+             </div>
+
+             <div class="glass-card" id="dept-transcript-box" style="display:none; margin-top:10px;">
+               <p id="dept-transcript-text" class="transcript-text">...</p>
+             </div>
+
+             <button id="btn-proceed-dept-confirm" class="btn btn-primary mt-4">Proceed to Confirm</button>
           </div>
         </section>
 
@@ -218,11 +257,11 @@
               <span class="label">Employee</span>
               <span class="value" id="conf-employee">-</span>
             </div>
-            <div class="glass-card-row">
-              <span class="label">New Manager</span>
-              <span class="value" id="conf-manager">-</span>
+            <div class="glass-card-row" id="conf-target-row">
+              <span class="label" id="conf-target-label">New Manager</span>
+              <span class="value" id="conf-target-value">-</span>
             </div>
-            <div class="glass-card-row">
+            <div class="glass-card-row" id="conf-type-row">
               <span class="label">Manager Type</span>
               <span class="value">Line Manager</span>
             </div>
