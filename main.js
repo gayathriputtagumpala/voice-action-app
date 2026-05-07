@@ -1,4 +1,4 @@
-﻿const API_BASE = 'https://voice-action-server.onrender.com/api';
+const API_BASE = 'https://voice-action-server.onrender.com/api';
 
 // State Variables
 let appState = {
@@ -166,7 +166,7 @@ function toggleRecording() {
     isRecording = true;
     audioChunks = [];
     micBtn.classList.add('recording');
-    statusBar.textContent = "ðŸ”´ Listening... click mic to stop";
+    statusBar.textContent = "🔴 Listening... click mic to stop";
     statusBar.style.color = 'var(--danger)';
     transcriptBox.style.display = 'block';
     transcriptText.textContent = "...";
@@ -321,7 +321,6 @@ async function fetchEmployeeDetails() {
             // Show manager rows
             if (empManagerRow) empManagerRow.style.display = 'flex';
             if (empStatusRow) empStatusRow.style.display = 'flex';
-            // Manager Type row handled later based on assignment status
         }
         
         // Avatar Initials
@@ -332,7 +331,6 @@ async function fetchEmployeeDetails() {
           empAvatar.textContent = "EM";
         }
 
-        empManagerTypeRow = document.getElementById('emp-manager-type-row');
         const empManagerBadge = document.getElementById('emp-manager-badge');
         
         if (appState.current_manager_name === "None") {
@@ -621,7 +619,7 @@ async function confirmAction() {
     handleError(err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "âœ… Confirm";
+    btn.textContent = "✅ Confirm";
   }
 }
 
@@ -893,7 +891,7 @@ function toggleDeptRecording() {
         isDeptRecording = true;
         audioChunks = [];
         deptMicBtn.classList.add('recording');
-        deptStatusBar.textContent = "ðŸ”´ Listening for department name...";
+        deptStatusBar.textContent = "🔴 Listening for department name...";
         deptTranscriptBox.style.display = 'block';
         deptTranscriptText.textContent = "...";
 
