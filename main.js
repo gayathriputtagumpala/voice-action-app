@@ -941,9 +941,24 @@ document.getElementById('btn-proceed-dept-confirm').addEventListener('click', ()
     moveToStep4();
 });
 
-// Update event listener for confirm button as we renamed the function
-document.getElementById('btn-confirm').removeEventListener('click', assignManager);
-document.getElementById('btn-confirm').addEventListener('click', confirmAction);
+// Event listeners for the confirmation screen buttons
+document.getElementById('btn-confirm').onclick = confirmAction;
+
+document.getElementById('btn-edit').onclick = () => {
+  console.log("Edit clicked, going back...");
+  // Go back to the input/selection step
+  if (appState.currentAction === 'change_department') {
+    document.getElementById('dept-selection-box').style.display = 'block';
+  } else {
+    managerDetailsBox.style.display = 'block';
+  }
+  switchTab('screen-home');
+};
+
+document.getElementById('btn-cancel').onclick = () => {
+  console.log("Cancel clicked, resetting app...");
+  resetApp();
+};
 
 // Popup function
 function showPopup(title, message, confirmText, cancelText, onConfirm, onCancel) {
