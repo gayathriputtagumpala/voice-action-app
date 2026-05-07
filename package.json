@@ -1,6 +1,3 @@
-Update voice-action-app/package.json
-Move vite from devDependencies to dependencies:
-
 {
   "name": "voice-action-app",
   "version": "0.0.0",
@@ -16,5 +13,3 @@ Move vite from devDependencies to dependencies:
     "@vitejs/plugin-basic-ssl": "^2.3.0"
   }
 }
-
-Save package.json only.
