@@ -300,13 +300,28 @@ async function fetchEmployeeDetails() {
         // Show/Hide relevant info based on action
         const empDeptRow = document.getElementById('emp-dept-row');
         const empCurrentDept = document.getElementById('emp-current-dept');
+        const empManagerRow = document.getElementById('emp-manager-row');
+        const empStatusRow = document.getElementById('emp-status-row');
+        const empManagerTypeRow = document.getElementById('emp-manager-type-row');
+
         if (appState.currentAction === 'change_department') {
             if (empDeptRow) empDeptRow.style.display = 'flex';
             if (empCurrentDept) empCurrentDept.textContent = appState.current_department;
+            
+            // Hide manager rows
+            if (empManagerRow) empManagerRow.style.display = 'none';
+            if (empStatusRow) empStatusRow.style.display = 'none';
+            if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
+
             // Fetch available departments for Step 3
             fetchDepartments();
         } else {
             if (empDeptRow) empDeptRow.style.display = 'none';
+            
+            // Show manager rows
+            if (empManagerRow) empManagerRow.style.display = 'flex';
+            if (empStatusRow) empStatusRow.style.display = 'flex';
+            // Manager Type row handled later based on assignment status
         }
         
         // Avatar Initials
@@ -337,7 +352,6 @@ async function fetchEmployeeDetails() {
         }
         
         employeeDetailsBox.style.display = 'block';
-
         moveToStep2();
 
     } catch (error) {
@@ -345,6 +359,18 @@ async function fetchEmployeeDetails() {
         handleError(error.message);
     }
 }
+
+function moveToStep2() {
+    console.log("Moving to Step 2...");
+    appState.workflowStep = 2;
+    updateStepDots(2);
+    
+    // Reset any previous step displays
+    document.getElementById('input-toggle-container').style.display = 'none';
+    document.getElementById('typeSection').style.display = 'none';
+    document.getElementById('voiceSection').style.display = 'none';
+    transcriptBox.style.display = 'none';
+    voiceConfirmBox.style.display = 'none';
 
     if (appState.currentAction === 'change_department') {
         showDepartmentChangeStep();
