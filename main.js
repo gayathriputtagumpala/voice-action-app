@@ -598,7 +598,9 @@ async function confirmAction() {
         
         if (!res.ok) {
             const errData = await res.json();
-            throw new Error(errData.error?.title || errData.error || "Failed to change department via Oracle API.");
+            console.error("Server Error Data:", errData);
+            const errorMsg = errData.details ? JSON.stringify(errData.details) : (errData.error ? JSON.stringify(errData.error) : "Unknown Server Error");
+            throw new Error(errorMsg);
         }
         
         console.log("Department Success!");
