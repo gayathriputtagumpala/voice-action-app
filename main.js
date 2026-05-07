@@ -898,7 +898,9 @@ async function fetchDepartments() {
         console.error("Failed to fetch departments:", err);
         const select = document.getElementById('dept-select');
         if (select) {
-            select.innerHTML = '<option value="">Error loading departments</option>';
+            let errorMsg = "Error loading departments";
+            if (err.message && err.message.includes('Error')) errorMsg = err.message;
+            select.innerHTML = `<option value="">${errorMsg}</option>`;
         }
     }
 }
