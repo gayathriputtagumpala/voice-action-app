@@ -353,6 +353,10 @@ body::after {
   border-color: #7c3aed;
   box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
 }
+.person-input option {
+  background-color: #1e1e38;
+  color: white;
+}
 
 /* Buttons */
 .search-btn, .btn-primary {
