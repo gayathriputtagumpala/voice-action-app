@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quadrobay Voice Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <!-- Background Orbs -->
+    <div class="bg-orb orb-purple"></div>
+    <div class="bg-orb orb-cyan"></div>
+
+    <!-- Top Header Bar -->
+    <header class="top-header">
+      <div class="header-left">
+        <img src="/logo.png" alt="Quadrobay" class="company-logo" onerror="this.style.display='none'">
+        <span class="logo-text">Quadrobay</span>
+      </div>
+      <div class="header-right" style="display: flex; align-items: center;">
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+        <span class="version-badge">Voice Assistant v1.0</span>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs (Hidden initially) -->
+    <nav class="tabs tab-bar">
+      <button class="tab-btn active" data-target="screen-dashboard">🏠 Home</button>
+      <button class="tab-btn" data-target="screen-home">🎤 Voice Input</button>
+      <button class="tab-btn" data-target="screen-confirmation" disabled>📋 Confirm</button>
+      <button class="tab-btn" data-target="screen-result" disabled>✅ Result</button>
+      <button class="tab-btn" data-target="screen-audit">📜 Logs</button>
+    </nav>
+
+    <!-- Main App Container -->
+    <main id="app" class="app-container main-card card container wrapper">
+      <div class="tab-content-container tab-content">
+        
+        <!-- DASHBOARD (Home) -->
+        <section id="screen-dashboard" class="screen active">
+          <div class="hero-section">
+            <div class="hero-badge">⚡ AI POWERED · VOICE ENABLED</div>
+            <h1 class="hero-title">
+              Manage HR actions.<br>
+              <span class="hero-highlight">Just use your voice.</span>
+            </h1>
+            <p class="hero-subtitle">
+              Speak in English, Tamil, Hindi, Telugu — or any Indian language.<br>
+            </p>
+          </div>
+          
+          <div class="action-grid home-grid">
+            <div class="action-card active" onclick="startAssignManager()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon icon-purple">👤</div>
+              <div class="card-title">Assign Manager</div>
+              <div class="card-description">Assign or change reporting manager for an employee</div>
+            </div>
+            
+            <div class="action-card coming-soon" onclick="showToast('This feature is coming soon!')">
+              <div class="card-badge badge-coming-soon">SOON</div>
+              <div class="card-icon icon-dark">🏢</div>
+              <div class="card-title">Change Department</div>
+              <div class="card-description">Move employee to a different department</div>
+            </div>
+            
+            <div class="action-card coming-soon" onclick="showToast('This feature is coming soon!')">
+              <div class="card-badge badge-coming-soon">SOON</div>
+              <div class="card-icon icon-dark">📍</div>
+              <div class="card-title">Change Location</div>
+              <div class="card-description">Update employee work location</div>
+            </div>
+            
+            <div class="action-card coming-soon" onclick="showToast('This feature is coming soon!')">
+              <div class="card-badge badge-coming-soon">SOON</div>
+              <div class="card-icon icon-dark">💼</div>
+              <div class="card-title">Change Job Title</div>
+              <div class="card-description">Update employee job title or grade</div>
+            </div>
+            
+            <div class="action-card coming-soon" onclick="showToast('This feature is coming soon!')">
+              <div class="card-badge badge-coming-soon">SOON</div>
+              <div class="card-icon icon-dark">⏱️</div>
+              <div class="card-title">Enter Timesheet</div>
+              <div class="card-description">Submit working hours for the week</div>
+            </div>
+            
+            <div class="action-card coming-soon" onclick="showToast('This feature is coming soon!')">
+              <div class="card-badge badge-coming-soon">SOON</div>
+              <div class="card-icon icon-dark">🏖️</div>
+              <div class="card-title">Apply Leave</div>
+              <div class="card-description">Apply for leave or time off</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VOICE INPUT SCREEN (Flow) -->
+        <section id="screen-home" class="screen">
+          <div id="step-indicator" class="step-indicator">
+            <div class="step-dot active" id="dot-1"></div>
+            <div class="step-dot" id="dot-2"></div>
+            <div class="step-dot" id="dot-3"></div>
+            <div class="step-dot" id="dot-4"></div>
+          </div>
+
+          <h1 id="main-title" class="step-title">Enter Employee Person Number</h1>
+          <p id="sub-title" class="subtitle" style="display:none;">Step 1 of 4</p>
+          
+          <!-- Input toggle -->
+          <div id="input-toggle-container" class="input-toggle">
+            <button id="typeBtn" class="toggle-btn" onclick="setInputMethod('type')">⌨️ Type</button>
+            <button id="voiceBtn" class="toggle-btn active" onclick="setInputMethod('voice')">🎤 Voice</button>
+          </div>
+
+          <!-- Type Section -->
+          <div id="typeSection" style="display: none; width: 100%;">
+            <input type="number" id="personNumberInput" class="person-input" placeholder="Enter Person Number e.g. 1405">
+            <button id="searchBtn" class="search-btn" onclick="searchByNumber()">🔍 Search Employee</button>
+          </div>
+
+          <!-- Voice Section -->
+          <div id="voiceSection" style="width: 100%;">
+            <div class="lang-selector" style="display:none;">
+              <select id="lang-select">
+                <option value="unknown" selected>Auto</option>
+              </select>
+            </div>
+            
+            <div id="mic-section" class="mic-container">
+              <button id="mic-btn" class="mic-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+            <p id="status-bar" class="status-bar">Press mic and speak the Person Number</p>
+          </div>
+
+          <!-- Transcript -->
+          <div class="glass-card" id="transcript-box" style="display:none;">
+            <p id="transcript-text" class="transcript-text">Waiting for voice input...</p>
+          </div>
+
+          <!-- Voice Confirm Box -->
+          <div id="voice-confirm-box" class="glass-card confirm-box" style="display:none;">
+            <p class="label">Did you say:</p>
+            <h2 id="voice-confirm-number" class="confirm-number"></h2>
+            <div class="actions center">
+              <button id="btn-voice-yes" class="btn btn-success">Yes</button>
+              <button id="btn-voice-no" class="btn btn-danger">Retry</button>
+            </div>
+          </div>
+
+          <!-- Employee Details (Step 1 Result) -->
+          <div id="employee-details-box" class="employee-card" style="display:none;">
+             <div class="emp-card-header">
+                <div class="emp-avatar" id="emp-avatar">EM</div>
+                <div class="emp-info">
+                  <div id="emp-name" class="emp-name">Employee Name</div>
+                  <div class="emp-id">Person Number: <span id="emp-no"></span></div>
+                </div>
+             </div>
+             <hr class="divider">
+             <div class="glass-card-row">
+               <span class="label">Current Manager</span>
+               <span id="emp-current-manager" class="value"></span>
+             </div>
+             <div class="glass-card-row" id="emp-manager-type-row" style="display:none;">
+               <span class="label">Manager Type</span>
+               <span class="value">Line Manager</span>
+             </div>
+             <div class="glass-card-row mt-4">
+               <span class="label">Status</span>
+               <span id="emp-manager-badge" class="badge"></span>
+             </div>
+          </div>
+
+          <!-- Step 2 Actions -->
+          <div id="step2-actions" class="actions" style="display:none;">
+            <button id="btn-assign-new" class="btn btn-primary">Assign New</button>
+            <button id="btn-change-existing" class="btn btn-secondary">Change Existing</button>
+          </div>
+
+          <!-- Manager Details (Step 3 Result) -->
+          <div id="manager-details-box" class="employee-card" style="display:none;">
+             <div class="emp-card-header">
+                <div class="emp-avatar" id="mgr-avatar">MG</div>
+                <div class="emp-info">
+                  <div id="mgr-name" class="emp-name">Manager Name</div>
+                  <div class="emp-id">Manager Number: <span id="mgr-no"></span></div>
+                </div>
+             </div>
+             <button id="btn-proceed-confirm" class="btn btn-primary mt-4">Proceed to Confirm</button>
+          </div>
+        </section>
+
+        <!-- CONFIRMATION SCREEN -->
+        <section id="screen-confirmation" class="screen">
+          <div id="step-indicator-2" class="step-indicator">
+            <div class="step-dot done"></div>
+            <div class="step-dot done"></div>
+            <div class="step-dot done"></div>
+            <div class="step-dot active"></div>
+          </div>
+          <h1 class="step-title">Confirm Details</h1>
+          
+          <div class="glass-card confirm-card">
+            <div class="glass-card-row">
+              <span class="label">Action</span>
+              <span class="value">Assign Manager</span>
+            </div>
+            <div class="glass-card-row">
+              <span class="label">Employee</span>
+              <span class="value" id="conf-employee">-</span>
+            </div>
+            <div class="glass-card-row">
+              <span class="label">New Manager</span>
+              <span class="value" id="conf-manager">-</span>
+            </div>
+            <div class="glass-card-row">
+              <span class="label">Manager Type</span>
+              <span class="value">Line Manager</span>
+            </div>
+            <div class="glass-card-row">
+              <span class="label">Effective Date</span>
+              <span class="value" id="conf-date">-</span>
+            </div>
+          </div>
+          
+          <div class="actions">
+            <button id="btn-confirm" class="btn btn-success">Confirm</button>
+            <button id="btn-edit" class="btn btn-secondary">Edit</button>
+            <button id="btn-cancel" class="btn btn-danger">Cancel</button>
+          </div>
+        </section>
+
+        <!-- RESULT SCREEN -->
+        <section id="screen-result" class="screen">
+          <div id="result-icon" class="result-icon success">
+            <svg id="svg-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <svg id="svg-error" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </div>
+          <h1 id="result-title" class="result-title">Success!</h1>
+          <p id="result-msg" class="result-msg">Manager assigned successfully</p>
+          <div class="actions center mt-4">
+            <button class="btn btn-primary" onclick="resetApp()">New Request</button>
+          </div>
+        </section>
+
+        <!-- AUDIT LOG SCREEN -->
+        <section id="screen-audit" class="screen">
+          <div class="audit-header">
+            <h1 class="step-title" style="margin-bottom:0;">Audit Log</h1>
+            <button id="btn-clear-log" class="btn btn-secondary small">Clear Log</button>
+          </div>
+          <div class="table-container">
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Person</th>
+                  <th>Manager</th>
+                  <th>Status</th>
+                  <th>Lang</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody">
+                <!-- Rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
