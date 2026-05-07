@@ -596,7 +596,10 @@ async function confirmAction() {
           })
         });
         
-        if (!res.ok) throw new Error("Failed to change department via Oracle API.");
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error?.title || errData.error || "Failed to change department via Oracle API.");
+        }
         
         console.log("Department Success!");
         saveAuditLog("Success");
