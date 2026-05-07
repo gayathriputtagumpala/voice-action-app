@@ -302,7 +302,7 @@ async function fetchEmployeeDetails() {
         const empCurrentDept = document.getElementById('emp-current-dept');
         const empManagerRow = document.getElementById('emp-manager-row');
         const empStatusRow = document.getElementById('emp-status-row');
-        empManagerTypeRow = document.getElementById('emp-manager-type-row');
+        const empManagerTypeRow = document.getElementById('emp-manager-type-row');
 
         if (appState.currentAction === 'change_department') {
             if (empDeptRow) empDeptRow.style.display = 'flex';
