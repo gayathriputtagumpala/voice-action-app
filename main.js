@@ -331,22 +331,30 @@ async function fetchEmployeeDetails() {
           empAvatar.textContent = "EM";
         }
 
-        const empManagerBadge = document.getElementById('emp-manager-badge');
-        
-        if (appState.current_manager_name === "None") {
-            empCurrentManager.textContent = "Not Assigned";
-            if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
-            if (empManagerBadge) {
-              empManagerBadge.textContent = 'Not Assigned';
-              empManagerBadge.className = 'badge warning';
+        if (appState.currentAction !== 'change_department') {
+            const empManagerBadge = document.getElementById('emp-manager-badge');
+            if (appState.current_manager_name === "None") {
+                empCurrentManager.textContent = "Not Assigned";
+                if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
+                if (empManagerBadge) {
+                    empManagerBadge.textContent = 'Not Assigned';
+                    empManagerBadge.className = 'badge warning';
+                }
+            } else {
+                empCurrentManager.textContent = `${appState.current_manager_name} (${appState.currentManagerNumber || 'Unknown'})`;
+                if (empManagerTypeRow) empManagerTypeRow.style.display = 'flex';
+                if (empManagerBadge) {
+                    empManagerBadge.textContent = 'Assigned';
+                    empManagerBadge.className = 'badge success';
+                }
             }
         } else {
-            empCurrentManager.textContent = `${appState.current_manager_name} (${appState.currentManagerNumber || 'Unknown'})`;
-            if (empManagerTypeRow) empManagerTypeRow.style.display = 'flex';
-            if (empManagerBadge) {
-              empManagerBadge.textContent = 'Assigned';
-              empManagerBadge.className = 'badge success';
-            }
+            // Ensure manager rows are hidden if we navigated here somehow
+            const empManagerRow = document.getElementById('emp-manager-row');
+            const empStatusRow = document.getElementById('emp-status-row');
+            if (empManagerRow) empManagerRow.style.display = 'none';
+            if (empStatusRow) empStatusRow.style.display = 'none';
+            if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
         }
         
         employeeDetailsBox.style.display = 'block';
@@ -855,20 +863,43 @@ window.setDeptInputMethod = function(method) {
 
 async function fetchDepartments() {
     try {
+        console.log("Fetching available departments from:", `${API_BASE}/oracle/departments`);
         const res = await fetch(`${API_BASE}/oracle/departments`);
+        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
         const data = await res.json();
+        console.log("Departments data received:", data);
+        
         appState.available_departments = data.departments || [];
         
         const select = document.getElementById('dept-select');
+        if (!select) {
+            console.error("Element 'dept-select' not found in DOM");
+            return;
+        }
+        
         select.innerHTML = '<option value="">Select a department...</option>';
-        appState.available_departments.forEach(d => {
+        
+        if (appState.available_departments.length === 0) {
+            console.warn("No departments returned from API.");
             const opt = document.createElement('option');
-            opt.value = d.DepartmentName;
-            opt.textContent = d.DepartmentName;
+            opt.textContent = "No departments found";
+            opt.disabled = true;
             select.appendChild(opt);
-        });
+        } else {
+            appState.available_departments.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.DepartmentName;
+                opt.textContent = d.DepartmentName;
+                select.appendChild(opt);
+            });
+            console.log(`Populated ${appState.available_departments.length} departments.`);
+        }
     } catch (err) {
         console.error("Failed to fetch departments:", err);
+        const select = document.getElementById('dept-select');
+        if (select) {
+            select.innerHTML = '<option value="">Error loading departments</option>';
+        }
     }
 }
 
