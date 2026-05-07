@@ -867,7 +867,47 @@ window.setDeptInputMethod = function(method) {
 };
 
 async function fetchDepartments() {
-    console.log("fetchDepartments() called - manual input enabled, skipping API call.");
+    try {
+        console.log("Fetching available departments from:", `${API_BASE}/oracle/departments`);
+        const res = await fetch(`${API_BASE}/oracle/departments`);
+        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+        const data = await res.json();
+        console.log("Departments data received:", data);
+        
+        appState.available_departments = data.departments || [];
+        
+        const select = document.getElementById('dept-select');
+        if (!select) {
+            console.error("Element 'dept-select' not found in DOM");
+            return;
+        }
+        
+        select.innerHTML = '<option value="">Select a department...</option>';
+        
+        if (appState.available_departments.length === 0) {
+            console.warn("No departments returned from API.");
+            const opt = document.createElement('option');
+            opt.textContent = "No departments found";
+            opt.disabled = true;
+            select.appendChild(opt);
+        } else {
+            appState.available_departments.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.DepartmentName;
+                opt.textContent = d.DepartmentName;
+                select.appendChild(opt);
+            });
+            console.log(`Populated ${appState.available_departments.length} departments.`);
+        }
+    } catch (err) {
+        console.error("Failed to fetch departments:", err);
+        const select = document.getElementById('dept-select');
+        if (select) {
+            let errorMsg = "Error loading departments";
+            if (err.message && err.message.includes('Error')) errorMsg = err.message;
+            select.innerHTML = `<option value="">${errorMsg}</option>`;
+        }
+    }
 }
 
 const deptMicBtn = document.getElementById('dept-mic-btn');
@@ -925,11 +965,22 @@ async function sendDeptToSarvam(audioBlob) {
         
         deptTranscriptText.textContent = transcript || "Could not understand.";
         if (transcript) {
-            appState.new_department = transcript.trim();
-            const deptInput = document.getElementById('dept-input');
-            if (deptInput) deptInput.value = appState.new_department;
-            deptStatusBar.textContent = `Recognized: ${appState.new_department}`;
-            deptStatusBar.style.color = 'var(--success)';
+            // Fuzzy match or direct match department
+            const cleanTranscript = transcript.toLowerCase().replace(/[^\w\s]/g, '').trim();
+            const match = appState.available_departments.find(d => 
+                cleanTranscript.includes(d.DepartmentName.toLowerCase()) ||
+                d.DepartmentName.toLowerCase().includes(cleanTranscript)
+            );
+            
+            if (match) {
+                appState.new_department = match.DepartmentName;
+                document.getElementById('dept-select').value = match.DepartmentName;
+                deptStatusBar.textContent = `Matched: ${match.DepartmentName}`;
+                deptStatusBar.style.color = '#10b981';
+            } else {
+                deptStatusBar.textContent = "No matching department found. Please try again or select from list.";
+                deptStatusBar.style.color = '#ef4444';
+            }
         }
     } catch (err) {
         console.error("STT Error:", err);
@@ -937,9 +988,9 @@ async function sendDeptToSarvam(audioBlob) {
 }
 
 document.getElementById('btn-proceed-dept-confirm').addEventListener('click', () => {
-    const val = document.getElementById('dept-input').value.trim();
+    const val = document.getElementById('dept-select').value;
     if (!val) {
-        alert("Please enter or speak a department name.");
+        alert("Please select or speak a department name.");
         return;
     }
     appState.new_department = val;
