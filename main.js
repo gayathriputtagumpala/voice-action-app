@@ -302,7 +302,7 @@ async function fetchEmployeeDetails() {
         const empCurrentDept = document.getElementById('emp-current-dept');
         const empManagerRow = document.getElementById('emp-manager-row');
         const empStatusRow = document.getElementById('emp-status-row');
-        const empManagerTypeRow = document.getElementById('emp-manager-type-row');
+        empManagerTypeRow = document.getElementById('emp-manager-type-row');
 
         if (appState.currentAction === 'change_department') {
             if (empDeptRow) empDeptRow.style.display = 'flex';
@@ -332,7 +332,7 @@ async function fetchEmployeeDetails() {
           empAvatar.textContent = "EM";
         }
 
-        const empManagerTypeRow = document.getElementById('emp-manager-type-row');
+        empManagerTypeRow = document.getElementById('emp-manager-type-row');
         const empManagerBadge = document.getElementById('emp-manager-badge');
         
         if (appState.current_manager_name === "None") {
@@ -1019,4 +1019,4 @@ function closePopup() {
   if (overlay) overlay.remove();
 }
 
-} // close resetApp`nconsole.log("App initialized.");;
+
