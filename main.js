@@ -764,6 +764,7 @@ function resetApp() {
   document.querySelector('.tab-btn[data-target="screen-result"]').setAttribute('disabled', 'true');
 
   switchTab('screen-dashboard');
+}
 window.resetApp = resetApp;
 
 window.inputMethod = 'voice';
@@ -1018,4 +1019,4 @@ function closePopup() {
   if (overlay) overlay.remove();
 }
 
-console.log("App initialized.");
+} // close resetApp`nconsole.log("App initialized.");;
