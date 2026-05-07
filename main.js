@@ -346,26 +346,34 @@ async function fetchEmployeeDetails() {
     }
 }
 
-function moveToStep2() {
-    console.log("Moving to Step 2...");
+    if (appState.currentAction === 'change_department') {
+        showDepartmentChangeStep();
+    } else {
+        showAssignManagerStep();
+    }
+}
+
+function showAssignManagerStep() {
+    console.log("Showing Assign Manager Step...");
     appState.workflowStep = 2;
     updateStepDots(2);
     mainTitle.textContent = "Select Action";
-    document.getElementById('sub-title').style.display = 'none';
     
-    document.getElementById('input-toggle-container').style.display = 'none';
-    document.getElementById('typeSection').style.display = 'none';
-    document.getElementById('voiceSection').style.display = 'none';
+    step2Actions.style.display = 'flex';
+}
+
+function showDepartmentChangeStep() {
+    console.log("Showing Department Change Step...");
+    appState.workflowStep = 2;
+    updateStepDots(2);
+    mainTitle.textContent = "Change Department";
     
-    transcriptBox.style.display = 'none';
-    voiceConfirmBox.style.display = 'none';
+    // For Dept Change, we skip the buttons and go straight to department selection
+    // but the user wants to see the employee card first.
+    // We already show employeeDetailsBox in fetchEmployeeDetails.
     
-    if (appState.currentAction === 'change_department') {
-        step2Actions.style.display = 'none';
-        setTimeout(() => moveToStep3(), 500); // Auto-proceed for department change as there's only one sub-action
-    } else {
-        step2Actions.style.display = 'flex';
-    }
+    // Auto-proceed to Step 3 (Department Selection)
+    setTimeout(() => moveToStep3(), 500);
 }
 
 btnAssignNew.addEventListener('click', () => {
@@ -712,7 +720,6 @@ function resetApp() {
   document.querySelector('.tab-btn[data-target="screen-result"]').setAttribute('disabled', 'true');
 
   switchTab('screen-dashboard');
-}
 window.resetApp = resetApp;
 
 window.inputMethod = 'voice';
@@ -775,16 +782,16 @@ window.showToast = function(message) {
 }
 
 window.startAssignManager = function() {
-  appState.currentAction = 'assign_manager';
   showAllTabs();
   resetApp();
+  appState.currentAction = 'assign_manager';
   switchTab('screen-home');
 }
 
 window.startChangeDepartment = function() {
-  appState.currentAction = 'change_department';
   showAllTabs();
   resetApp();
+  appState.currentAction = 'change_department';
   switchTab('screen-home');
 }
 
