@@ -346,8 +346,41 @@ function moveToStep2() {
     step2Actions.style.display = 'flex';
 }
 
-btnAssignNew.addEventListener('click', moveToStep3);
-btnChangeExisting.addEventListener('click', moveToStep3);
+btnAssignNew.addEventListener('click', () => {
+  if (appState.current_manager_name && 
+      appState.current_manager_name !== 'None' && 
+      appState.current_manager_name !== 'Not Assigned') {
+    showPopup(
+      '⚠️ Manager Already Assigned',
+      `This employee already has a manager: ${appState.current_manager_name}. 
+       Are you sure you want to assign a new additional manager?
+       If you want to change the existing manager, click Cancel and choose 'Change Existing' instead.`,
+      'Continue Anyway',
+      'Cancel',
+      () => { moveToStep3(); },
+      () => { closePopup(); }
+    );
+  } else {
+    moveToStep3();
+  }
+});
+
+btnChangeExisting.addEventListener('click', () => {
+  if (!appState.current_manager_name || 
+      appState.current_manager_name === 'None' || 
+      appState.current_manager_name === 'Not Assigned') {
+    showPopup(
+      '⚠️ No Manager Found',
+      'This employee has no existing manager to change. Please click "Assign New" to assign a first manager.',
+      'OK',
+      null,
+      () => { closePopup(); },
+      null
+    );
+  } else {
+    moveToStep3();
+  }
+});
 
 function moveToStep3() {
     console.log("Moving to Step 3...");
@@ -485,12 +518,12 @@ function showResult(isSuccess, message) {
   const msgElem = document.getElementById('result-msg');
 
   if (isSuccess) {
-    iconDiv.className = 'icon-circle success';
+    iconDiv.className = 'result-icon success';
     svgSuccess.style.display = 'block';
     svgError.style.display = 'none';
     title.textContent = 'Success!';
   } else {
-    iconDiv.className = 'icon-circle error';
+    iconDiv.className = 'result-icon error';
     svgSuccess.style.display = 'none';
     svgError.style.display = 'block';
     title.textContent = 'Error';
@@ -674,6 +707,60 @@ window.startAssignManager = function() {
   showAllTabs();
   resetApp();
   switchTab('screen-home');
+}
+
+// Popup function
+function showPopup(title, message, confirmText, cancelText, onConfirm, onCancel) {
+  const overlay = document.createElement('div');
+  overlay.id = 'popup-overlay';
+  overlay.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  `;
+  
+  overlay.innerHTML = `
+    <div style="
+      background: #1a1a2e; border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 16px; padding: 32px; max-width: 400px; width: 90%;
+      text-align: center; box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+    ">
+      <div style="font-size: 24px; margin-bottom: 12px; color: white;">${title}</div>
+      <div style="color: #94a3b8; font-size: 14px; line-height: 1.6; 
+                  margin-bottom: 24px;">${message}</div>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        ${cancelText ? `<button id="popup-cancel" style="
+          padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+          background: transparent; color: #94a3b8; cursor: pointer; font-size: 14px;
+        ">${cancelText}</button>` : ''}
+        <button id="popup-confirm" style="
+          padding: 10px 20px; border-radius: 10px; border: none;
+          background: linear-gradient(135deg, #7c3aed, #4f46e5);
+          color: white; cursor: pointer; font-size: 14px; font-weight: 600;
+        ">${confirmText}</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+  
+  document.getElementById('popup-confirm').onclick = () => {
+    overlay.remove();
+    if (onConfirm) onConfirm();
+  };
+  
+  if (cancelText) {
+    document.getElementById('popup-cancel').onclick = () => {
+      overlay.remove();
+      if (onCancel) onCancel();
+    };
+  }
+}
+
+function closePopup() {
+  const overlay = document.getElementById('popup-overlay');
+  if (overlay) overlay.remove();
 }
 
 console.log("App initialized.");
