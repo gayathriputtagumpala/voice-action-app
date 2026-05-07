@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = 'https://voice-action-server.onrender.com/api';
 
 // State Variables
 let appState = {
