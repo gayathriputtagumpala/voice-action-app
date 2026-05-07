@@ -870,7 +870,10 @@ async function fetchDepartments() {
     try {
         console.log("Fetching available departments from:", `${API_BASE}/oracle/departments`);
         const res = await fetch(`${API_BASE}/oracle/departments`);
-        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || `HTTP Error ${res.status}`);
+        }
         const data = await res.json();
         console.log("Departments data received:", data);
         
