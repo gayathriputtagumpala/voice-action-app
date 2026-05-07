@@ -366,14 +366,32 @@ function showDepartmentChangeStep() {
     console.log("Showing Department Change Step...");
     appState.workflowStep = 2;
     updateStepDots(2);
-    mainTitle.textContent = "Change Department";
     
-    // For Dept Change, we skip the buttons and go straight to department selection
-    // but the user wants to see the employee card first.
-    // We already show employeeDetailsBox in fetchEmployeeDetails.
+    // Hide assign manager action buttons (step2-actions)
+    const actionButtons = document.getElementById('step2-actions');
+    if (actionButtons) actionButtons.style.display = 'none';
     
-    // Auto-proceed to Step 3 (Department Selection)
-    setTimeout(() => moveToStep3(), 500);
+    // Robustly hide any other sections containing these buttons
+    document.querySelectorAll('.actions, [id*="action"], [class*="assign"]').forEach(el => {
+      if (el.textContent.includes('Assign New') || el.textContent.includes('Change Existing')) {
+        el.style.display = 'none';
+      }
+    });
+  
+    // Show department selection section (dept-selection-box)
+    const deptSection = document.getElementById('dept-selection-box');
+    if (deptSection) {
+      deptSection.style.display = 'block';
+      console.log('Department section shown:', deptSection.id);
+    } else {
+      console.error('Department section not found!');
+    }
+    
+    // Update step title
+    mainTitle.textContent = 'Select New Department';
+    
+    // Prepare department selection
+    setDeptInputMethod('voice');
 }
 
 btnAssignNew.addEventListener('click', () => {
