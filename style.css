@@ -85,17 +85,9 @@ body::after {
   align-items: center;
 }
 .company-logo {
-  height: 28px;
+  height: 32px;
   width: auto;
-  margin-right: 12px;
   object-fit: contain;
-}
-.logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #a78bfa, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 .version-badge {
   font-size: 11px;
