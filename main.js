@@ -593,6 +593,7 @@ async function confirmAction() {
             encodedAssignmentId: appState.encodedAssignmentId,
             DepartmentId: appState.new_department_id,
             DepartmentName: appState.new_department,
+            BusinessUnitId: appState.BusinessUnitId,
             EffectiveDate: appState.effective_date
           })
         });
