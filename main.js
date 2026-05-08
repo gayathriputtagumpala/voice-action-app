@@ -591,7 +591,7 @@ async function confirmAction() {
             encodedPersonId: appState.encodedPersonId,
             WorkRelationshipId: appState.WorkRelationshipId,
             encodedAssignmentId: appState.encodedAssignmentId,
-            OrganizationId: appState.new_department_id,
+            DepartmentId: appState.new_department_id,
             DepartmentName: appState.new_department,
             EffectiveDate: appState.effective_date
           })
