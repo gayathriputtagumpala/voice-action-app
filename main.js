@@ -591,6 +591,7 @@ async function confirmAction() {
             encodedPersonId: appState.encodedPersonId,
             WorkRelationshipId: appState.WorkRelationshipId,
             encodedAssignmentId: appState.encodedAssignmentId,
+            OrganizationId: appState.new_department_id,
             DepartmentName: appState.new_department,
             EffectiveDate: appState.effective_date
           })
@@ -896,7 +897,7 @@ async function fetchDepartments() {
         } else {
             appState.available_departments.forEach(d => {
                 const opt = document.createElement('option');
-                opt.value = d.DepartmentName;
+                opt.value = d.DepartmentId; // Use ID as value
                 opt.textContent = d.DepartmentName;
                 select.appendChild(opt);
             });
@@ -995,12 +996,14 @@ async function sendDeptToSarvam(audioBlob) {
 }
 
 document.getElementById('btn-proceed-dept-confirm').addEventListener('click', () => {
-    const val = document.getElementById('dept-select').value;
+    const select = document.getElementById('dept-select');
+    const val = select.value;
     if (!val) {
         alert("Please select or speak a department name.");
         return;
     }
-    appState.new_department = val;
+    appState.new_department_id = val; // Store OrganizationId
+    appState.new_department = select.options[select.selectedIndex].text; // Store Name for display
     moveToStep4();
 });
 
