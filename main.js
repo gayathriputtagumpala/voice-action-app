@@ -602,7 +602,12 @@ async function confirmAction() {
         if (!res.ok) {
             const errData = await res.json();
             console.error("Server Error Data:", errData);
-            const errorMsg = errData.details ? JSON.stringify(errData.details) : (errData.error ? JSON.stringify(errData.error) : "Unknown Server Error");
+            let errorMsg = "Server Error";
+            if (errData.error) {
+                errorMsg = typeof errData.error === 'object' ? JSON.stringify(errData.error) : errData.error;
+            } else if (errData.details) {
+                errorMsg = JSON.stringify(errData.details);
+            }
             throw new Error(errorMsg);
         }
         
