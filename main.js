@@ -591,10 +591,9 @@ async function confirmAction() {
             encodedPersonId: appState.encodedPersonId,
             WorkRelationshipId: appState.WorkRelationshipId,
             encodedAssignmentId: appState.encodedAssignmentId,
-            DepartmentId: appState.new_department_id,
+            DepartmentId: appState.selected_department_id,
             DepartmentName: appState.new_department,
-            BusinessUnitId: appState.BusinessUnitId,
-            EffectiveDate: appState.effective_date
+            EffectiveDate: new Date().toISOString().split('T')[0]
           })
         });
         
@@ -903,7 +902,7 @@ async function fetchDepartments() {
         } else {
             appState.available_departments.forEach(d => {
                 const opt = document.createElement('option');
-                opt.value = d.DepartmentId; // Use ID as value
+                opt.value = d.DepartmentId;
                 opt.textContent = d.DepartmentName;
                 select.appendChild(opt);
             });
@@ -1008,8 +1007,8 @@ document.getElementById('btn-proceed-dept-confirm').addEventListener('click', ()
         alert("Please select or speak a department name.");
         return;
     }
-    appState.new_department_id = val; // Store OrganizationId
-    appState.new_department = select.options[select.selectedIndex].text; // Store Name for display
+    appState.selected_department_id = val; 
+    appState.new_department = select.options[select.selectedIndex].text; 
     moveToStep4();
 });
 
