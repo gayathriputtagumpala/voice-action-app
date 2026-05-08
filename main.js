@@ -282,8 +282,8 @@ async function fetchEmployeeDetails() {
         
         if (!data.encodedPersonId) throw new Error(`Person number ${appState.person_number} details incomplete.`);
         
-        appState.encodedPersonId = data.encodedPersonId;
-        appState.encodedAssignmentId = data.encodedAssignmentId;
+        appState.encodedPersonId = data.encodedPersonId.split('?')[0];
+        appState.encodedAssignmentId = data.encodedAssignmentId.split('?')[0];
         appState.WorkRelationshipId = data.WorkRelationshipId;
         appState.worker_display_name = data.DisplayName;
         appState.current_manager_name = data.currentManagerName || "None";
