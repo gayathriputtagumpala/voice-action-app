@@ -291,6 +291,7 @@ async function fetchEmployeeDetails() {
         appState.managerSelfLink = data.managerSelfLink;
         appState.current_department = data.DepartmentName;
         appState.BusinessUnitId = data.BusinessUnitId;
+        appState.BusinessUnitName = data.BusinessUnitName;
 
         console.log("Employee found:", appState.worker_display_name);
         
@@ -875,9 +876,8 @@ window.setDeptInputMethod = function(method) {
 
 async function fetchDepartments() {
     try {
-        const query = `encodedPersonId=${appState.encodedPersonId}&WorkRelationshipId=${appState.WorkRelationshipId}&encodedAssignmentId=${appState.encodedAssignmentId}`;
-        console.log("Fetching filtered departments for current assignment...");
-        const res = await fetch(`${API_BASE}/oracle/departments?${query}`);
+        console.log("Fetching departments for Business Unit:", appState.BusinessUnitName);
+        const res = await fetch(`${API_BASE}/oracle/departments?BusinessUnitName=${encodeURIComponent(appState.BusinessUnitName || '')}`);
         if (!res.ok) {
             const errData = await res.json();
             throw new Error(errData.error || `HTTP Error ${res.status}`);
