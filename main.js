@@ -875,8 +875,9 @@ window.setDeptInputMethod = function(method) {
 
 async function fetchDepartments() {
     try {
-        console.log("Fetching filtered departments for Business Unit:", appState.BusinessUnitId);
-        const res = await fetch(`${API_BASE}/oracle/departments?BusinessUnitId=${appState.BusinessUnitId || ''}`);
+        const query = `encodedPersonId=${appState.encodedPersonId}&WorkRelationshipId=${appState.WorkRelationshipId}&encodedAssignmentId=${appState.encodedAssignmentId}`;
+        console.log("Fetching filtered departments for current assignment...");
+        const res = await fetch(`${API_BASE}/oracle/departments?${query}`);
         if (!res.ok) {
             const errData = await res.json();
             throw new Error(errData.error || `HTTP Error ${res.status}`);
