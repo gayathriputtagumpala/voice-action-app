@@ -1,4 +1,4 @@
-﻿const API_BASE = 'https://voice-action-server.onrender.com/api';
+const API_BASE = 'https://voice-action-server.onrender.com/api';
 
 // State Variables
 let appState = {
@@ -290,6 +290,7 @@ async function fetchEmployeeDetails() {
         appState.currentManagerNumber = data.currentManagerNumber;
         appState.managerSelfLink = data.managerSelfLink;
         appState.current_department = data.DepartmentName;
+        appState.BusinessUnitId = data.BusinessUnitId;
 
         console.log("Employee found:", appState.worker_display_name);
         
@@ -874,8 +875,8 @@ window.setDeptInputMethod = function(method) {
 
 async function fetchDepartments() {
     try {
-        console.log("Fetching available departments from:", `${API_BASE}/oracle/departments`);
-        const res = await fetch(`${API_BASE}/oracle/departments`);
+        console.log("Fetching filtered departments for Business Unit:", appState.BusinessUnitId);
+        const res = await fetch(`${API_BASE}/oracle/departments?BusinessUnitId=${appState.BusinessUnitId || ''}`);
         if (!res.ok) {
             const errData = await res.json();
             throw new Error(errData.error || `HTTP Error ${res.status}`);
