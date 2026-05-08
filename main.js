@@ -622,7 +622,12 @@ async function confirmAction() {
           })
         });
         
-        if (!res.ok) throw new Error("Failed to assign manager via Oracle API.");
+        if (!res.ok) {
+            const errData = await res.json();
+            console.error("Assign Manager Error Data:", errData);
+            const errorMsg = errData.error ? (typeof errData.error === 'string' ? errData.error : JSON.stringify(errData.error)) : "Failed to assign manager via Oracle API.";
+            throw new Error(errorMsg);
+        }
         
         console.log("Assign Success!");
         saveAuditLog("Success");
