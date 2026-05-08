@@ -982,7 +982,7 @@ async function sendDeptToSarvam(audioBlob) {
             
             if (match) {
                 appState.new_department = match.DepartmentName;
-                document.getElementById('dept-select').value = match.DepartmentName;
+                document.getElementById('dept-select').value = match.DepartmentId;
                 deptStatusBar.textContent = `Matched: ${match.DepartmentName}`;
                 deptStatusBar.style.color = '#10b981';
             } else {
