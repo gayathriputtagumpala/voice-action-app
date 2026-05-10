@@ -490,7 +490,7 @@ function moveToStep3() {
         
         document.getElementById('personNumberInput').value = '';
         document.getElementById('personNumberInput').placeholder = 'Enter Manager Person Number e.g. 2351';
-        document.getElementById('searchBtn').textContent = 'ðŸ” Search Manager';
+        document.getElementById('searchBtn').textContent = 'Search Manager';
         
         statusBar.style.display = 'block';
         statusBar.textContent = "Please speak the Manager's Person Number";
@@ -766,7 +766,7 @@ function resetApp() {
   
   document.getElementById('personNumberInput').value = '';
   document.getElementById('personNumberInput').placeholder = 'Enter Person Number e.g. 1405';
-  document.getElementById('searchBtn').textContent = 'ðŸ” Search Employee';
+  document.getElementById('searchBtn').textContent = 'Search Employee';
 
   statusBar.style.display = 'block';
   statusBar.textContent = "Press mic and speak the Person Number";
@@ -1091,6 +1091,7 @@ function closePopup() {
   const overlay = document.getElementById('popup-overlay');
   if (overlay) overlay.remove();
 }
+
 
 
 
