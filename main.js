@@ -929,6 +929,7 @@ function resetApp() {
   step2Actions.style.display = 'none';
   managerDetailsBox.style.display = 'none';
   document.getElementById('dept-selection-box').style.display = 'none';
+  document.getElementById('location-selection-box').style.display = 'none';
   document.getElementById('emp-dept-row').style.display = 'none';
   
   document.querySelector('.tab-btn[data-target="screen-confirmation"]').setAttribute('disabled', 'true');
