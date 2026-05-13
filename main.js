@@ -1026,6 +1026,34 @@ window.setDeptInputMethod = function(method) {
     }
 };
 
+window.setLocInputMethod = function(method) {
+    if (method === 'type') {
+        document.getElementById('loc-type-section').style.display = 'block';
+        document.getElementById('loc-voice-section').style.display = 'none';
+        document.getElementById('locTypeBtn').classList.add('active');
+        document.getElementById('locVoiceBtn').classList.remove('active');
+    } else {
+        document.getElementById('loc-type-section').style.display = 'none';
+        document.getElementById('loc-voice-section').style.display = 'block';
+        document.getElementById('locVoiceBtn').classList.add('active');
+        document.getElementById('locTypeBtn').classList.remove('active');
+    }
+};
+
+window.setLocInputMethod = function(method) {
+    if (method === 'type') {
+        document.getElementById('loc-type-section').style.display = 'block';
+        document.getElementById('loc-voice-section').style.display = 'none';
+        document.getElementById('locTypeBtn').classList.add('active');
+        document.getElementById('locVoiceBtn').classList.remove('active');
+    } else {
+        document.getElementById('loc-type-section').style.display = 'none';
+        document.getElementById('loc-voice-section').style.display = 'block';
+        document.getElementById('locVoiceBtn').classList.add('active');
+        document.getElementById('locTypeBtn').classList.remove('active');
+    }
+};
+
 async function fetchDepartments() {
     try {
         console.log("Fetching departments for Business Unit:", appState.BusinessUnitName);
@@ -1245,6 +1273,18 @@ async function sendLocToSarvam(audioBlob) {
     }
 }
 
+document.getElementById('btn-proceed-loc-confirm').addEventListener('click', () => {
+    const select = document.getElementById('location-select');
+    const val = select.value;
+    if (!val) {
+        alert("Please select or speak a location name.");
+        return;
+    }
+    appState.selected_location_id = Number(val); 
+    appState.new_location = select.options[select.selectedIndex].text; 
+    moveToStep4();
+});
+
 // Event listeners for the confirmation screen buttons
 document.getElementById('btn-confirm').onclick = confirmAction;
 
@@ -1253,6 +1293,8 @@ document.getElementById('btn-edit').onclick = () => {
   // Go back to the input/selection step
   if (appState.currentAction === 'change_department') {
     document.getElementById('dept-selection-box').style.display = 'block';
+  } else if (appState.currentAction === 'change_location') {
+    document.getElementById('location-selection-box').style.display = 'block';
   } else {
     managerDetailsBox.style.display = 'block';
   }
