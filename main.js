@@ -295,6 +295,7 @@ async function fetchEmployeeDetails() {
         appState.managerSelfLink = data.managerSelfLink;
         appState.assignmentSelfLink = data.assignmentSelfLink;
         appState.current_department = data.DepartmentName;
+        appState.LocationName = data.LocationName;
         appState.BusinessUnitId = data.BusinessUnitId;
         appState.BusinessUnitName = data.BusinessUnitName;
 
@@ -328,7 +329,7 @@ async function fetchEmployeeDetails() {
         } else if (appState.currentAction === 'change_location') {
             if (empDeptRow) empDeptRow.style.display = 'flex';
             if (empCurrentDept) {
-                empCurrentDept.textContent = appState.LocationName || 'Not Assigned';
+                empCurrentDept.textContent = data.LocationName || 'Not Assigned';
                 empDeptRow.querySelector('.label').innerText = 'Current Location';
             }
             
@@ -635,11 +636,11 @@ function moveToStep4() {
     switchTab('screen-confirmation');
 }
 
-function startChangeLocation() {
+window.startChangeLocation = function() {
+    showAllTabs();
     resetApp();
     appState.currentAction = 'change_location';
-    showScreen('screen-home');
-    showStep(1, "Enter Employee Person Number");
+    switchTab('screen-home');
 }
 
 async function fetchLocations() {
@@ -1164,6 +1165,85 @@ document.getElementById('btn-proceed-dept-confirm').addEventListener('click', ()
     appState.new_department = select.options[select.selectedIndex].text; 
     moveToStep4();
 });
+
+// Location Logic (Voice)
+const locMicBtn = document.getElementById('loc-mic-btn');
+const locStatusBar = document.getElementById('loc-status-bar');
+const locTranscriptBox = document.getElementById('loc-transcript-box');
+const locTranscriptText = document.getElementById('loc-transcript-text');
+
+let isLocRecording = false;
+
+if (locMicBtn) {
+    locMicBtn.addEventListener('click', toggleLocRecording);
+}
+
+function toggleLocRecording() {
+    if (isLocRecording) {
+        isLocRecording = false;
+        locMicBtn.classList.remove('recording');
+        locStatusBar.textContent = "⌛ Processing voice...";
+        if(mediaRecorder) mediaRecorder.stop();
+    } else {
+        isLocRecording = true;
+        audioChunks = [];
+        locMicBtn.classList.add('recording');
+        locStatusBar.textContent = "🔴 Listening for location name...";
+        locTranscriptBox.style.display = 'block';
+        locTranscriptText.textContent = "...";
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.start();
+            
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = () => {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+              sendLocToSarvam(audioBlob);
+              stream.getTracks().forEach(track => track.stop());
+            };
+          }).catch(err => {
+            console.error("Mic error:", err);
+            isLocRecording = false;
+            locMicBtn.classList.remove('recording');
+        });
+    }
+}
+
+async function sendLocToSarvam(audioBlob) {
+    try {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'audio.webm');
+        formData.append('language_code', langSelect.value);
+        
+        const res = await fetch(`${API_BASE}/sarvam/stt`, { method: 'POST', body: formData });
+        const data = await res.json();
+        const transcript = data.transcript;
+        
+        locTranscriptText.textContent = transcript || "Could not understand.";
+        if (transcript) {
+            const cleanTranscript = transcript.toLowerCase().replace(/[^\w\s]/g, '').trim();
+            const match = appState.available_locations.find(l => 
+                cleanTranscript.includes(l.LocationName.toLowerCase()) ||
+                l.LocationName.toLowerCase().includes(cleanTranscript)
+            );
+            
+            if (match) {
+                appState.new_location = match.LocationName;
+                document.getElementById('location-select').value = match.LocationId;
+                locStatusBar.textContent = `Matched: ${match.LocationName}`;
+                locStatusBar.style.color = '#10b981';
+            } else {
+                locStatusBar.textContent = "No matching location found. Please try again or select from list.";
+                locStatusBar.style.color = '#ef4444';
+            }
+        }
+    } catch (err) {
+        console.error("STT Error:", err);
+    }
+}
 
 // Event listeners for the confirmation screen buttons
 document.getElementById('btn-confirm').onclick = confirmAction;
