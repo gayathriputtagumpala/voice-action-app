@@ -21,7 +21,11 @@ let appState = {
   currentAction: 'assign_manager', // 'assign_manager' or 'change_department'
   current_department: null,
   new_department: null,
-  available_departments: []
+  available_departments: [],
+  assignmentSelfLink: null,
+  selected_location_id: null,
+  new_location: null,
+  available_locations: []
 };
 
 // DOM Elements
@@ -289,6 +293,7 @@ async function fetchEmployeeDetails() {
         appState.current_manager_name = data.currentManagerName || "None";
         appState.currentManagerNumber = data.currentManagerNumber;
         appState.managerSelfLink = data.managerSelfLink;
+        appState.assignmentSelfLink = data.assignmentSelfLink;
         appState.current_department = data.DepartmentName;
         appState.BusinessUnitId = data.BusinessUnitId;
         appState.BusinessUnitName = data.BusinessUnitName;
@@ -308,7 +313,10 @@ async function fetchEmployeeDetails() {
 
         if (appState.currentAction === 'change_department') {
             if (empDeptRow) empDeptRow.style.display = 'flex';
-            if (empCurrentDept) empCurrentDept.textContent = appState.current_department;
+            if (empCurrentDept) {
+                empCurrentDept.textContent = appState.current_department;
+                empDeptRow.querySelector('.label').innerText = 'Current Department';
+            }
             
             // Hide manager rows
             if (empManagerRow) empManagerRow.style.display = 'none';
@@ -317,6 +325,20 @@ async function fetchEmployeeDetails() {
 
             // Fetch available departments for Step 3
             fetchDepartments();
+        } else if (appState.currentAction === 'change_location') {
+            if (empDeptRow) empDeptRow.style.display = 'flex';
+            if (empCurrentDept) {
+                empCurrentDept.textContent = appState.LocationName || 'Not Assigned';
+                empDeptRow.querySelector('.label').innerText = 'Current Location';
+            }
+            
+            // Hide manager rows
+            if (empManagerRow) empManagerRow.style.display = 'none';
+            if (empStatusRow) empStatusRow.style.display = 'none';
+            if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
+
+            // Fetch available locations for Step 3
+            fetchLocations();
         } else {
             if (empDeptRow) empDeptRow.style.display = 'none';
             
@@ -382,6 +404,8 @@ function moveToStep2() {
 
     if (appState.currentAction === 'change_department') {
         showDepartmentChangeStep();
+    } else if (appState.currentAction === 'change_location') {
+        showLocationChangeStep();
     } else {
         showAssignManagerStep();
     }
@@ -426,6 +450,28 @@ function showDepartmentChangeStep() {
     
     // Prepare department selection
     setDeptInputMethod('voice');
+}
+
+function showLocationChangeStep() {
+    console.log("Showing Location Change Step...");
+    appState.workflowStep = 2;
+    updateStepDots(2);
+    
+    // Hide assign manager action buttons (step2-actions)
+    const actionButtons = document.getElementById('step2-actions');
+    if (actionButtons) actionButtons.style.display = 'none';
+    
+    // Show location selection section (location-selection-box)
+    const locSection = document.getElementById('location-selection-box');
+    if (locSection) {
+      locSection.style.display = 'block';
+    }
+    
+    // Update step title
+    mainTitle.textContent = 'Select New Location';
+    
+    // Prepare location selection
+    setLocInputMethod('voice');
 }
 
 btnAssignNew.addEventListener('click', () => {
@@ -482,6 +528,14 @@ function moveToStep3() {
         
         document.getElementById('dept-selection-box').style.display = 'block';
         setDeptInputMethod('voice');
+    } else if (appState.currentAction === 'change_location') {
+        mainTitle.textContent = "Select New Location";
+        document.getElementById('input-toggle-container').style.display = 'none';
+        document.getElementById('typeSection').style.display = 'none';
+        document.getElementById('voiceSection').style.display = 'none';
+        
+        document.getElementById('location-selection-box').style.display = 'block';
+        setLocInputMethod('voice');
     } else {
         mainTitle.textContent = "Enter Manager Person Number";
         document.getElementById('input-toggle-container').style.display = 'block';
@@ -564,6 +618,11 @@ function moveToStep4() {
         targetLabel.textContent = "New Department";
         targetValue.textContent = appState.new_department;
         if (typeRow) typeRow.style.display = 'none';
+    } else if (appState.currentAction === 'change_location') {
+        actionLabel.textContent = "Change Location";
+        targetLabel.textContent = "New Location";
+        targetValue.textContent = appState.new_location;
+        if (typeRow) typeRow.style.display = 'none';
     } else {
         actionLabel.textContent = "Assign Manager";
         targetLabel.textContent = "New Manager";
@@ -575,6 +634,65 @@ function moveToStep4() {
 
     switchTab('screen-confirmation');
 }
+
+function startChangeLocation() {
+    resetApp();
+    appState.currentAction = 'change_location';
+    showScreen('screen-home');
+    showStep(1, "Enter Employee Person Number");
+}
+
+async function fetchLocations() {
+    try {
+        const res = await fetch(`${API_BASE}/oracle/locations`);
+        const data = await res.json();
+        appState.available_locations = data.locations;
+        
+        const select = document.getElementById('location-select');
+        select.innerHTML = '<option value="">Select a location...</option>';
+        data.locations.forEach(loc => {
+            const opt = document.createElement('option');
+            opt.value = loc.LocationId;
+            opt.innerText = `${loc.LocationName} (${loc.City}, ${loc.Country})`;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to fetch locations', err);
+    }
+}
+
+function setLocInputMethod(method) {
+    const voiceBtn = document.getElementById('locVoiceBtn');
+    const typeBtn = document.getElementById('locTypeBtn');
+    const voiceSec = document.getElementById('loc-voice-section');
+    const typeSec = document.getElementById('loc-type-section');
+    
+    if (method === 'voice') {
+        voiceBtn.classList.add('active');
+        typeBtn.classList.remove('active');
+        voiceSec.style.display = 'block';
+        typeSec.style.display = 'none';
+    } else {
+        typeBtn.classList.add('active');
+        voiceBtn.classList.remove('active');
+        typeSec.style.display = 'block';
+        voiceSec.style.display = 'none';
+    }
+}
+
+function confirmLocationSelection() {
+    const select = document.getElementById('location-select');
+    if (!select.value) {
+        showToast("Please select a location");
+        return;
+    }
+    appState.selected_location_id = select.value;
+    appState.new_location = select.options[select.selectedIndex].text.split(' (')[0];
+    moveToStep4();
+}
+
+// Wire up the new button
+document.getElementById('btn-proceed-loc-confirm')?.addEventListener('click', confirmLocationSelection);
 
 async function confirmAction() {
   const action = appState.currentAction === 'change_department' ? 'Change Department' : 'Assign Manager';
@@ -590,12 +708,13 @@ async function confirmAction() {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            assignmentSelfLink: appState.assignmentSelfLink,
             encodedPersonId: appState.encodedPersonId,
             WorkRelationshipId: appState.WorkRelationshipId,
             encodedAssignmentId: appState.encodedAssignmentId,
             DepartmentId: appState.selected_department_id,
             DepartmentName: appState.new_department,
-            EffectiveDate: new Date().toISOString().split('T')[0]
+            EffectiveDate: '2025-05-01'
           })
         });
         
@@ -614,7 +733,30 @@ async function confirmAction() {
         console.log("Department Success!");
         saveAuditLog("Success");
         showResult(true, `Department changed to ${appState.new_department} successfully for Person ${appState.person_number}.`);
-    } else {
+        } else if (appState.currentAction === 'change_location') {
+            console.log("Calling PATCH /api/oracle/location...");
+            const res = await fetch(`${API_BASE}/oracle/location`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                encodedPersonId: appState.encodedPersonId,
+                WorkRelationshipId: appState.WorkRelationshipId,
+                encodedAssignmentId: appState.encodedAssignmentId,
+                LocationId: appState.selected_location_id,
+                LocationName: appState.new_location,
+                EffectiveDate: '2025-05-01'
+              })
+            });
+            
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Failed to change location.");
+            }
+            
+            console.log("Location Success!");
+            saveAuditLog("Success");
+            showResult(true, `Location changed to ${appState.new_location} successfully for Person ${appState.person_number}.`);
+        } else {
         console.log("Calling POST /api/oracle/assign...");
         const res = await fetch(`${API_BASE}/oracle/assign`, {
           method: 'POST',
@@ -746,7 +888,11 @@ function resetApp() {
     currentAction: 'assign_manager',
     current_department: null,
     new_department: null,
-    available_departments: []
+    available_departments: [],
+    assignmentSelfLink: null,
+    selected_location_id: null,
+    new_location: null,
+    available_locations: []
   };
   audioChunks = [];
   
