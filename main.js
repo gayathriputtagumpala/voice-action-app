@@ -1362,8 +1362,7 @@ function closePopup() {
 }
 
 async function handleLogin() {
-  const oracleUrl = document.getElementById('login-oracle-url')
-    .value.trim();
+  const oracleUrl = 'https://fa-eubg-test-saasfademo1.ds-fa.oraclepdemos.com';
   const username = document.getElementById('login-username')
     .value.trim();
   const password = document.getElementById('login-password')
@@ -1373,14 +1372,8 @@ async function handleLogin() {
   const spinner = document.getElementById('login-spinner');
   
   // Validation
-  if (!oracleUrl || !username || !password) {
+  if (!username || !password) {
     errorEl.textContent = 'Please fill in all fields';
-    errorEl.style.display = 'block';
-    return;
-  }
-  
-  if (!oracleUrl.startsWith('https://')) {
-    errorEl.textContent = 'Oracle URL must start with https://';
     errorEl.style.display = 'block';
     return;
   }
@@ -1438,4 +1431,39 @@ async function handleLogin() {
     spinner.style.display = 'none';
     document.getElementById('login-btn').disabled = false;
   }
+}
+
+// Check existing session on load
+window.addEventListener('load', () => {
+  const loggedIn = sessionStorage.getItem('loggedIn');
+  if (loggedIn === 'true') {
+    const oracleUrl = sessionStorage.getItem('oracleUrl');
+    const oracleAuth = sessionStorage.getItem('oracleAuth');
+    const userName = sessionStorage.getItem('userName');
+    
+    // Restore session
+    appState.oracleUrl = oracleUrl;
+    appState.oracleAuth = oracleAuth;
+    
+    document.getElementById('login-screen')
+      .style.display = 'none';
+    document.getElementById('main-app')
+      .style.display = 'block';
+      
+    const userBadge = document.getElementById('user-badge');
+    if (userBadge && userName) userBadge.textContent = userName;
+  }
+});
+
+// Logout
+window.logout = function() {
+  sessionStorage.clear();
+  appState.oracleUrl = null;
+  appState.oracleAuth = null;
+  document.getElementById('login-screen')
+    .style.display = 'flex';
+  document.getElementById('main-app')
+    .style.display = 'none';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
 }
