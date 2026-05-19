@@ -1362,7 +1362,7 @@ function closePopup() {
 }
 
 async function handleLogin() {
-  const oracleUrl = 'https://fa-eubg-test-saasfademo1.ds-fa.oraclepdemos.com';
+  const oracleUrl = 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com';
   const username = document.getElementById('login-username')
     .value.trim();
   const password = document.getElementById('login-password')
