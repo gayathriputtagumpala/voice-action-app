@@ -1451,6 +1451,14 @@ window.addEventListener('load', () => {
   const loggedIn = sessionStorage.getItem('loggedIn');
   if (loggedIn === 'true') {
     const oracleUrl = sessionStorage.getItem('oracleUrl');
+    
+    // Force logout if the stored URL is the old maintenance URL
+    if (oracleUrl !== 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com') {
+      console.log('Stale session detected. Forcing logout.');
+      sessionStorage.clear();
+      return;
+    }
+    
     const oracleAuth = sessionStorage.getItem('oracleAuth');
     const userName = sessionStorage.getItem('userName');
     
