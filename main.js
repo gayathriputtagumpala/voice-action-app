@@ -280,7 +280,7 @@ async function fetchEmployeeDetails() {
         console.log("Fetching Worker Details for Person No:", appState.person_number);
         statusBar.textContent = `Looking up Person ${appState.person_number}...`;
         
-        const res = await fetch(`${API_BASE}/oracle/worker?person_number=${appState.person_number}`);
+        const res = await fetch(`${API_BASE}/oracle/worker?person_number=${appState.person_number}`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
         if (!res.ok) throw new Error(`Person number ${appState.person_number} not found.`);
         const data = await res.json();
         
@@ -560,7 +560,7 @@ async function fetchManagerDetails() {
         console.log("Fetching Manager Details for Number:", appState.manager_person_number);
         statusBar.textContent = `Looking up Manager ${appState.manager_person_number}...`;
 
-        const res = await fetch(`${API_BASE}/oracle/manager?manager_person_number=${appState.manager_person_number}`);
+        const res = await fetch(`${API_BASE}/oracle/manager?manager_person_number=${appState.manager_person_number}`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
         if (!res.ok) throw new Error(`Manager Person number ${appState.manager_person_number} not found.`);
         const data = await res.json();
         
@@ -645,7 +645,7 @@ window.startChangeLocation = function() {
 
 async function fetchLocations() {
     try {
-        const res = await fetch(`${API_BASE}/oracle/locations`);
+        const res = await fetch(`${API_BASE}/oracle/locations`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
         const data = await res.json();
         appState.available_locations = data.locations;
         
@@ -707,7 +707,7 @@ async function confirmAction() {
         console.log("Calling PATCH /api/oracle/department...");
         const res = await fetch(`${API_BASE}/oracle/department`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
           body: JSON.stringify({
             assignmentSelfLink: appState.assignmentSelfLink,
             encodedPersonId: appState.encodedPersonId,
@@ -738,7 +738,7 @@ async function confirmAction() {
             console.log("Calling PATCH /api/oracle/location...");
             const res = await fetch(`${API_BASE}/oracle/location`, {
               method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
               body: JSON.stringify({
                 encodedPersonId: appState.encodedPersonId,
                 WorkRelationshipId: appState.WorkRelationshipId,
@@ -761,7 +761,7 @@ async function confirmAction() {
         console.log("Calling POST /api/oracle/assign...");
         const res = await fetch(`${API_BASE}/oracle/assign`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
           body: JSON.stringify({
             encodedPersonId: appState.encodedPersonId,
             WorkRelationshipId: appState.WorkRelationshipId,
@@ -1058,7 +1058,7 @@ window.setLocInputMethod = function(method) {
 async function fetchDepartments() {
     try {
         console.log("Fetching departments for Business Unit:", appState.BusinessUnitName);
-        const res = await fetch(`${API_BASE}/oracle/departments?BusinessUnitName=${encodeURIComponent(appState.BusinessUnitName || '')}`);
+        const res = await fetch(`${API_BASE}/oracle/departments?BusinessUnitName=${encodeURIComponent(appState.BusinessUnitName || '')}`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
         if (!res.ok) {
             const errData = await res.json();
             throw new Error(errData.error || `HTTP Error ${res.status}`);
@@ -1361,99 +1361,81 @@ function closePopup() {
   if (overlay) overlay.remove();
 }
 
-const HR_USERS = [
-  { username: 'hr_admin', password: 'Admin@2025', 
-    name: 'HR Admin' },
-  { username: 'hr_user1', password: 'Hr@User1', 
-    name: 'HR Executive 1' },
-  { username: 'hr_user2', password: 'Hr@User2', 
-    name: 'HR Executive 2' },
-  { username: 'hr_user3', password: 'Hr@User3', 
-    name: 'HR Executive 3' },
-];
-
-function handleLogin() {
+async function handleLogin() {
+  const oracleUrl = document.getElementById('login-oracle-url')
+    .value.trim();
   const username = document.getElementById('login-username')
     .value.trim();
   const password = document.getElementById('login-password')
     .value.trim();
   const errorEl = document.getElementById('login-error');
+  const btnText = document.getElementById('login-btn-text');
+  const spinner = document.getElementById('login-spinner');
   
-  if (!username || !password) {
-    errorEl.textContent = 'Please enter username and password';
+  // Validation
+  if (!oracleUrl || !username || !password) {
+    errorEl.textContent = 'Please fill in all fields';
     errorEl.style.display = 'block';
     return;
   }
   
-  const user = HR_USERS.find(u => 
-    u.username === username && u.password === password
-  );
-  
-  if (user) {
-    // Save session
-    sessionStorage.setItem('loggedIn', 'true');
-    sessionStorage.setItem('userName', user.name);
-    
-    // Hide login show app
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    
-    // Show welcome name in header
-    const userBadge = document.getElementById('user-badge');
-    if (userBadge) userBadge.textContent = user.name;
-    
-    errorEl.style.display = 'none';
-    console.log('Login successful:', user.name);
-    
-  } else {
-    errorEl.textContent = 'Invalid username or password';
+  if (!oracleUrl.startsWith('https://')) {
+    errorEl.textContent = 'Oracle URL must start with https://';
     errorEl.style.display = 'block';
+    return;
+  }
+  
+  // Show loading
+  btnText.style.display = 'none';
+  spinner.style.display = 'inline';
+  errorEl.style.display = 'none';
+  document.getElementById('login-btn').disabled = true;
+  
+  try {
+    const response = await fetch(`${API_BASE}/auth/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
+      body: JSON.stringify({ oracleUrl, username, password })
+    });
     
-    // Shake animation on error
-    document.querySelector('.login-card').style.animation = 
-      'shake 0.5s ease';
-    setTimeout(() => {
-      document.querySelector('.login-card').style.animation = '';
-    }, 500);
-  }
-}
-
-// Check session on page load
-window.addEventListener('load', () => {
-  const loggedIn = sessionStorage.getItem('loggedIn');
-  if (loggedIn === 'true') {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    const userName = sessionStorage.getItem('userName');
-    const userBadge = document.getElementById('user-badge');
-    if (userBadge && userName) userBadge.textContent = userName;
-  }
-});
-
-// Login button click
-document.getElementById('login-btn')
-  .addEventListener('click', handleLogin);
-
-// Enter key on password
-document.getElementById('login-password')
-  .addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') handleLogin();
-  });
-
-// Enter key on username - move to password
-document.getElementById('login-username')
-  .addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      document.getElementById('login-password').focus();
+    const data = await response.json();
+    
+    if (response.ok && data.success) {
+      // Save session - store auth token and oracle URL
+      sessionStorage.setItem('loggedIn', 'true');
+      sessionStorage.setItem('userName', username);
+      sessionStorage.setItem('oracleUrl', data.oracleUrl);
+      sessionStorage.setItem('oracleAuth', data.authToken);
+      
+      // Update app state with dynamic credentials
+      appState.oracleUrl = data.oracleUrl;
+      appState.oracleAuth = data.authToken;
+      
+      // Hide login show app
+      document.getElementById('login-screen')
+        .style.display = 'none';
+      document.getElementById('main-app')
+        .style.display = 'block';
+      
+      // Show username in header
+      const userBadge = document.getElementById('user-badge');
+      if (userBadge) userBadge.textContent = username;
+      
+      console.log('Login successful for:', username);
+      
+    } else {
+      errorEl.textContent = data.error || 'Login failed';
+      errorEl.style.display = 'block';
     }
-  });
-
-// Logout function
-window.logout = function() {
-  sessionStorage.removeItem('loggedIn');
-  sessionStorage.removeItem('userName');
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('main-app').style.display = 'none';
-  document.getElementById('login-username').value = '';
-  document.getElementById('login-password').value = '';
+    
+  } catch (err) {
+    errorEl.textContent = 'Connection error. Please try again.';
+    errorEl.style.display = 'block';
+    console.error('Login error:', err);
+    
+  } finally {
+    btnText.style.display = 'inline';
+    spinner.style.display = 'none';
+    document.getElementById('login-btn').disabled = false;
+  }
 }

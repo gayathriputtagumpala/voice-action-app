@@ -12,36 +12,53 @@
     <div id="login-screen">
       <div class="login-card">
         
-        <img src="/quadrobay-logo.png" class="login-logo" 
+        <img src="/quadrobay-logo.png" class="login-logo"
              onerror="this.style.display='none'">
         
         <h2 class="login-title">Oracle HCM Voice Assistant</h2>
-        <p class="login-subtitle">Sign in to continue</p>
+        <p class="login-subtitle">
+          Sign in with your Oracle Fusion credentials
+        </p>
         
         <div class="login-form">
+
           <div class="input-group">
-            <label>Username</label>
+            <label>Oracle Environment URL</label>
             <input type="text" 
-                   id="login-username" 
-                   placeholder="Enter username"
+                   id="login-oracle-url"
+                   placeholder="https://your-company.oraclecloud.com"
+                   autocomplete="off">
+          </div>
+          
+          <div class="input-group">
+            <label>Oracle Username</label>
+            <input type="text" 
+                   id="login-username"
+                   placeholder="Enter Oracle username"
                    autocomplete="username">
           </div>
           
           <div class="input-group">
-            <label>Password</label>
+            <label>Oracle Password</label>
             <input type="password" 
-                   id="login-password" 
-                   placeholder="Enter password"
+                   id="login-password"
+                   placeholder="Enter Oracle password"
                    autocomplete="current-password">
           </div>
           
           <p id="login-error"></p>
           
-          <button id="login-btn">Sign In</button>
+          <button id="login-btn">
+            <span id="login-btn-text">Sign In with Oracle</span>
+            <span id="login-spinner" style="display:none">
+              Verifying...
+            </span>
+          </button>
         </div>
         
         <p class="login-footer">
-          Powered by Quadrobay · Oracle HCM
+          Your credentials are verified directly against 
+          Oracle Fusion and never stored.
         </p>
       </div>
     </div>
