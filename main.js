@@ -1433,6 +1433,19 @@ async function handleLogin() {
   }
 }
 
+// Event listeners for login
+const loginBtn = document.getElementById('login-btn');
+if (loginBtn) {
+  loginBtn.addEventListener('click', handleLogin);
+}
+
+const loginPassword = document.getElementById('login-password');
+if (loginPassword) {
+  loginPassword.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleLogin();
+  });
+}
+
 // Check existing session on load
 window.addEventListener('load', () => {
   const loggedIn = sessionStorage.getItem('loggedIn');
