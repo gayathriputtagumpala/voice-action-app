@@ -1361,9 +1361,99 @@ function closePopup() {
   if (overlay) overlay.remove();
 }
 
+const HR_USERS = [
+  { username: 'hr_admin', password: 'Admin@2025', 
+    name: 'HR Admin' },
+  { username: 'hr_user1', password: 'Hr@User1', 
+    name: 'HR Executive 1' },
+  { username: 'hr_user2', password: 'Hr@User2', 
+    name: 'HR Executive 2' },
+  { username: 'hr_user3', password: 'Hr@User3', 
+    name: 'HR Executive 3' },
+];
 
+function handleLogin() {
+  const username = document.getElementById('login-username')
+    .value.trim();
+  const password = document.getElementById('login-password')
+    .value.trim();
+  const errorEl = document.getElementById('login-error');
+  
+  if (!username || !password) {
+    errorEl.textContent = 'Please enter username and password';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  const user = HR_USERS.find(u => 
+    u.username === username && u.password === password
+  );
+  
+  if (user) {
+    // Save session
+    sessionStorage.setItem('loggedIn', 'true');
+    sessionStorage.setItem('userName', user.name);
+    
+    // Hide login show app
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    
+    // Show welcome name in header
+    const userBadge = document.getElementById('user-badge');
+    if (userBadge) userBadge.textContent = user.name;
+    
+    errorEl.style.display = 'none';
+    console.log('Login successful:', user.name);
+    
+  } else {
+    errorEl.textContent = 'Invalid username or password';
+    errorEl.style.display = 'block';
+    
+    // Shake animation on error
+    document.querySelector('.login-card').style.animation = 
+      'shake 0.5s ease';
+    setTimeout(() => {
+      document.querySelector('.login-card').style.animation = '';
+    }, 500);
+  }
+}
 
+// Check session on page load
+window.addEventListener('load', () => {
+  const loggedIn = sessionStorage.getItem('loggedIn');
+  if (loggedIn === 'true') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    const userName = sessionStorage.getItem('userName');
+    const userBadge = document.getElementById('user-badge');
+    if (userBadge && userName) userBadge.textContent = userName;
+  }
+});
 
+// Login button click
+document.getElementById('login-btn')
+  .addEventListener('click', handleLogin);
 
+// Enter key on password
+document.getElementById('login-password')
+  .addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
 
+// Enter key on username - move to password
+document.getElementById('login-username')
+  .addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      document.getElementById('login-password').focus();
+    }
+  });
 
+// Logout function
+window.logout = function() {
+  sessionStorage.removeItem('loggedIn');
+  sessionStorage.removeItem('userName');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+}

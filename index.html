@@ -9,7 +9,44 @@
     <link rel="stylesheet" href="./style.css">
   </head>
   <body>
-    <!-- Background Orbs -->
+    <div id="login-screen">
+      <div class="login-card">
+        
+        <img src="/quadrobay-logo.png" class="login-logo" 
+             onerror="this.style.display='none'">
+        
+        <h2 class="login-title">Oracle HCM Voice Assistant</h2>
+        <p class="login-subtitle">Sign in to continue</p>
+        
+        <div class="login-form">
+          <div class="input-group">
+            <label>Username</label>
+            <input type="text" 
+                   id="login-username" 
+                   placeholder="Enter username"
+                   autocomplete="username">
+          </div>
+          
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" 
+                   id="login-password" 
+                   placeholder="Enter password"
+                   autocomplete="current-password">
+          </div>
+          
+          <p id="login-error"></p>
+          
+          <button id="login-btn">Sign In</button>
+        </div>
+        
+        <p class="login-footer">
+          Powered by Quadrobay · Oracle HCM
+        </p>
+      </div>
+    </div>
+    <div id="main-app" style="display:none;">
+      <!-- Background Orbs -->
     <div class="bg-orb orb-purple"></div>
     <div class="bg-orb orb-cyan"></div>
 
@@ -19,6 +56,9 @@
         <img src="/logo.png" alt="Quadrobay" class="company-logo">
       </div>
       <div class="header-right" style="display: flex; align-items: center;">
+        <span id="user-badge" class="user-badge"></span>
+        <button class="theme-toggle" onclick="logout()" 
+                title="Logout">🚪</button>
         <button id="themeToggle" class="theme-toggle">🌙</button>
         <span class="version-badge">Voice Assistant v1.0</span>
       </div>
@@ -356,6 +396,7 @@
 
       </div>
     </main>
+    </div>
     <script type="module" src="./main.js"></script>
   </body>
 </html>
