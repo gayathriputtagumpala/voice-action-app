@@ -29,7 +29,11 @@ let appState = {
   selected_job_id: null,
   new_job: null,
   available_jobs: [],
-  current_job_name: null
+  current_job_name: null,
+  available_positions: [],
+  selected_position_id: null,
+  new_position: null,
+  current_position_name: null
 };
 
 // DOM Elements
@@ -303,6 +307,7 @@ async function fetchEmployeeDetails() {
         appState.BusinessUnitId = data.BusinessUnitId;
         appState.BusinessUnitName = data.BusinessUnitName;
         appState.current_job_name = data.JobName;
+        appState.current_position_name = data.PositionName;
 
         console.log("Employee found:", appState.worker_display_name);
         
@@ -359,6 +364,20 @@ async function fetchEmployeeDetails() {
 
             // Fetch available jobs for Step 3
             fetchJobs();
+        } else if (appState.currentAction === 'change_position') {
+            if (empDeptRow) empDeptRow.style.display = 'flex';
+            if (empCurrentDept) {
+                empCurrentDept.textContent = appState.current_position_name || 'Not Assigned';
+                empDeptRow.querySelector('.label').innerText = 'Current Position';
+            }
+            
+            // Hide manager rows
+            if (empManagerRow) empManagerRow.style.display = 'none';
+            if (empStatusRow) empStatusRow.style.display = 'none';
+            if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
+
+            // Fetch available positions for Step 3
+            fetchPositions();
         } else {
             if (empDeptRow) empDeptRow.style.display = 'none';
             
@@ -431,6 +450,8 @@ function moveToStep2() {
         showLocationChangeStep();
     } else if (appState.currentAction === 'change_job') {
         showJobChangeStep();
+    } else if (appState.currentAction === 'change_position') {
+        showPositionChangeStep();
     } else {
         showAssignManagerStep();
     }
@@ -534,6 +555,28 @@ function showJobChangeStep() {
     setJobInputMethod('voice');
 }
 
+function showPositionChangeStep() {
+    console.log("Showing Position Change Step...");
+    appState.workflowStep = 2;
+    updateStepDots(2);
+    
+    // Hide assign manager action buttons (step2-actions)
+    const actionButtons = document.getElementById('step2-actions');
+    if (actionButtons) actionButtons.style.display = 'none';
+    
+    // Show position selection section (position-selection-box)
+    const posSection = document.getElementById('position-selection-box');
+    if (posSection) {
+      posSection.style.display = 'block';
+    }
+    
+    // Update step title
+    mainTitle.textContent = 'Select New Position';
+    
+    // Prepare position selection
+    setPositionInputMethod('voice');
+}
+
 btnAssignNew.addEventListener('click', () => {
   if (appState.current_manager_name && 
       appState.current_manager_name !== 'None' && 
@@ -602,6 +645,14 @@ function moveToStep3() {
         
         document.getElementById('job-selection-box').style.display = 'block';
         setJobInputMethod('voice');
+    } else if (appState.currentAction === 'change_position') {
+        mainTitle.textContent = "Select New Position";
+        document.getElementById('input-toggle-container').style.display = 'none';
+        document.getElementById('typeSection').style.display = 'none';
+        document.getElementById('voiceSection').style.display = 'none';
+        
+        document.getElementById('position-selection-box').style.display = 'block';
+        setPositionInputMethod('voice');
     } else {
         mainTitle.textContent = "Enter Manager Person Number";
         document.getElementById('input-toggle-container').style.display = 'block';
@@ -693,6 +744,11 @@ function moveToStep4() {
         actionLabel.textContent = "Change Job";
         targetLabel.textContent = "New Job";
         targetValue.textContent = appState.new_job;
+        if (typeRow) typeRow.style.display = 'none';
+    } else if (appState.currentAction === 'change_position') {
+        actionLabel.textContent = "Change Position";
+        targetLabel.textContent = "New Position";
+        targetValue.textContent = appState.new_position;
         if (typeRow) typeRow.style.display = 'none';
     } else {
         actionLabel.textContent = "Assign Manager";
@@ -824,8 +880,68 @@ function confirmJobSelection() {
 
 document.getElementById('btn-proceed-job-confirm')?.addEventListener('click', confirmJobSelection);
 
+window.startChangePosition = function() {
+    showAllTabs();
+    resetApp();
+    appState.currentAction = 'change_position';
+    switchTab('screen-home');
+}
+
+async function fetchPositions() {
+    try {
+        console.log("Fetching positions...");
+        const res = await fetch(`${API_BASE}/oracle/positions`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
+        const data = await res.json();
+        appState.available_positions = data.positions || [];
+        
+        const select = document.getElementById('position-select');
+        select.innerHTML = '<option value="">Select a position...</option>';
+        appState.available_positions.forEach(pos => {
+            const opt = document.createElement('option');
+            opt.value = pos.PositionId;
+            opt.innerText = `${pos.Name} (${pos.PositionCode})`;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to fetch positions', err);
+    }
+}
+
+function setPositionInputMethod(method) {
+    const voiceBtn = document.getElementById('posVoiceBtn');
+    const typeBtn = document.getElementById('posTypeBtn');
+    const voiceSec = document.getElementById('pos-voice-section');
+    const typeSec = document.getElementById('pos-type-section');
+    
+    if (method === 'voice') {
+        voiceBtn.classList.add('active');
+        typeBtn.classList.remove('active');
+        voiceSec.style.display = 'block';
+        typeSec.style.display = 'none';
+    } else {
+        typeBtn.classList.add('active');
+        voiceBtn.classList.remove('active');
+        typeSec.style.display = 'block';
+        voiceSec.style.display = 'none';
+    }
+}
+window.setPositionInputMethod = setPositionInputMethod;
+
+function confirmPositionSelection() {
+    const select = document.getElementById('position-select');
+    if (!select.value) {
+        showToast("Please select a position");
+        return;
+    }
+    appState.selected_position_id = select.value;
+    appState.new_position = select.options[select.selectedIndex].text.split(' (')[0];
+    moveToStep4();
+}
+
+document.getElementById('btn-proceed-pos-confirm')?.addEventListener('click', confirmPositionSelection);
+
 async function confirmAction() {
-  const action = appState.currentAction === 'change_department' ? 'Change Department' : (appState.currentAction === 'change_location' ? 'Change Location' : (appState.currentAction === 'change_job' ? 'Change Job' : 'Assign Manager'));
+  const action = appState.currentAction === 'change_department' ? 'Change Department' : (appState.currentAction === 'change_location' ? 'Change Location' : (appState.currentAction === 'change_job' ? 'Change Job' : (appState.currentAction === 'change_position' ? 'Change Position' : 'Assign Manager')));
   console.log(`${action} clicked...`);
   const btn = document.getElementById('btn-confirm');
   btn.disabled = true;
@@ -909,6 +1025,29 @@ async function confirmAction() {
             console.log("Job Success!");
             saveAuditLog("Success");
             showResult(true, `Job changed to ${appState.new_job} successfully for Person ${appState.person_number}.`);
+        } else if (appState.currentAction === 'change_position') {
+            console.log("Calling PATCH /api/oracle/position...");
+            const res = await fetch(`${API_BASE}/oracle/position`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
+              body: JSON.stringify({
+                encodedPersonId: appState.encodedPersonId,
+                WorkRelationshipId: appState.WorkRelationshipId,
+                encodedAssignmentId: appState.encodedAssignmentId,
+                PositionId: appState.selected_position_id,
+                PositionName: appState.new_position,
+                EffectiveDate: '2025-05-01'
+              })
+            });
+            
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Failed to change position.");
+            }
+            
+            console.log("Position Success!");
+            saveAuditLog("Success");
+            showResult(true, `Position changed to ${appState.new_position} successfully for Person ${appState.person_number}.`);
         } else {
         console.log("Calling POST /api/oracle/assign...");
         const res = await fetch(`${API_BASE}/oracle/assign`, {
@@ -1038,6 +1177,7 @@ function resetApp() {
     manager_display_name: null,
     effective_date: new Date().toISOString().split('T')[0],
     audioBlob: null,
+    
     currentAction: 'assign_manager',
     current_department: null,
     new_department: null,
@@ -1050,7 +1190,11 @@ function resetApp() {
     new_job: null,
     available_jobs: [],
     current_job_name: null,
-    available_managers: []
+    available_managers: [],
+    available_positions: [],
+    selected_position_id: null,
+    new_position: null,
+    current_position_name: null
   };
   audioChunks = [];
   
@@ -1071,7 +1215,7 @@ function resetApp() {
   document.getElementById('personNumberInput').value = '';
   document.getElementById('personNumberInput').placeholder = 'Enter Person Number e.g. 1405';
   document.getElementById('searchBtn').textContent = 'Search Employee';
-
+ 
   statusBar.style.display = 'block';
   statusBar.textContent = "Press mic and speak the Person Number";
   statusBar.style.color = 'var(--text-muted)';
@@ -1089,11 +1233,12 @@ function resetApp() {
   document.getElementById('location-selection-box').style.display = 'none';
   document.getElementById('job-selection-box').style.display = 'none';
   document.getElementById('manager-selection-box').style.display = 'none';
+  document.getElementById('position-selection-box').style.display = 'none';
   document.getElementById('emp-dept-row').style.display = 'none';
   
   document.querySelector('.tab-btn[data-target="screen-confirmation"]').setAttribute('disabled', 'true');
   document.querySelector('.tab-btn[data-target="screen-result"]').setAttribute('disabled', 'true');
-
+ 
   switchTab('screen-dashboard');
 }
 window.resetApp = resetApp;
@@ -1517,6 +1662,85 @@ async function sendJobToSarvam(audioBlob) {
             } else {
                 jobStatusBar.textContent = "No matching job found. Please try again or select from list.";
                 jobStatusBar.style.color = '#ef4444';
+            }
+        }
+    } catch (err) {
+        console.error("STT Error:", err);
+    }
+}
+
+// Position Logic (Voice)
+const posMicBtn = document.getElementById('pos-mic-btn');
+const posStatusBar = document.getElementById('pos-status-bar');
+const posTranscriptBox = document.getElementById('pos-transcript-box');
+const posTranscriptText = document.getElementById('pos-transcript-text');
+
+let isPosRecording = false;
+
+if (posMicBtn) {
+    posMicBtn.addEventListener('click', togglePosRecording);
+}
+
+function togglePosRecording() {
+    if (isPosRecording) {
+        isPosRecording = false;
+        posMicBtn.classList.remove('recording');
+        posStatusBar.textContent = "⌛ Processing voice...";
+        if(mediaRecorder) mediaRecorder.stop();
+    } else {
+        isPosRecording = true;
+        audioChunks = [];
+        posMicBtn.classList.add('recording');
+        posStatusBar.textContent = "🔴 Listening for position name...";
+        posTranscriptBox.style.display = 'block';
+        posTranscriptText.textContent = "...";
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.start();
+            
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = () => {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+              sendPosToSarvam(audioBlob);
+              stream.getTracks().forEach(track => track.stop());
+            };
+          }).catch(err => {
+            console.error("Mic error:", err);
+            isPosRecording = false;
+            posMicBtn.classList.remove('recording');
+        });
+    }
+}
+
+async function sendPosToSarvam(audioBlob) {
+    try {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'audio.webm');
+        formData.append('language_code', langSelect.value);
+        
+        const res = await fetch(`${API_BASE}/sarvam/stt`, { method: 'POST', body: formData });
+        const data = await res.json();
+        const transcript = data.transcript;
+        
+        posTranscriptText.textContent = transcript || "Could not understand.";
+        if (transcript) {
+            const cleanTranscript = transcript.toLowerCase().replace(/[^\w\s]/g, '').trim();
+            const match = appState.available_positions.find(p => 
+                cleanTranscript.includes(p.Name.toLowerCase()) ||
+                p.Name.toLowerCase().includes(cleanTranscript)
+            );
+            
+            if (match) {
+                appState.new_position = match.Name;
+                document.getElementById('position-select').value = match.PositionId;
+                posStatusBar.textContent = `Matched: ${match.Name}`;
+                posStatusBar.style.color = '#10b981';
+            } else {
+                posStatusBar.textContent = "No matching position found. Please try again or select from list.";
+                posStatusBar.style.color = '#ef4444';
             }
         }
     } catch (err) {
