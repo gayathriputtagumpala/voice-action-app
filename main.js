@@ -25,7 +25,11 @@ let appState = {
   assignmentSelfLink: null,
   selected_location_id: null,
   new_location: null,
-  available_locations: []
+  available_locations: [],
+  selected_job_id: null,
+  new_job: null,
+  available_jobs: [],
+  current_job_name: null
 };
 
 // DOM Elements
@@ -298,6 +302,7 @@ async function fetchEmployeeDetails() {
         appState.LocationName = data.LocationName;
         appState.BusinessUnitId = data.BusinessUnitId;
         appState.BusinessUnitName = data.BusinessUnitName;
+        appState.current_job_name = data.JobName;
 
         console.log("Employee found:", appState.worker_display_name);
         
@@ -340,6 +345,20 @@ async function fetchEmployeeDetails() {
 
             // Fetch available locations for Step 3
             fetchLocations();
+        } else if (appState.currentAction === 'change_job') {
+            if (empDeptRow) empDeptRow.style.display = 'flex';
+            if (empCurrentDept) {
+                empCurrentDept.textContent = appState.current_job_name || 'Not Assigned';
+                empDeptRow.querySelector('.label').innerText = 'Current Job';
+            }
+            
+            // Hide manager rows
+            if (empManagerRow) empManagerRow.style.display = 'none';
+            if (empStatusRow) empStatusRow.style.display = 'none';
+            if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
+
+            // Fetch available jobs for Step 3
+            fetchJobs();
         } else {
             if (empDeptRow) empDeptRow.style.display = 'none';
             
@@ -537,6 +556,14 @@ function moveToStep3() {
         
         document.getElementById('location-selection-box').style.display = 'block';
         setLocInputMethod('voice');
+    } else if (appState.currentAction === 'change_job') {
+        mainTitle.textContent = "Select New Job";
+        document.getElementById('input-toggle-container').style.display = 'none';
+        document.getElementById('typeSection').style.display = 'none';
+        document.getElementById('voiceSection').style.display = 'none';
+        
+        document.getElementById('job-selection-box').style.display = 'block';
+        setJobInputMethod('voice');
     } else {
         mainTitle.textContent = "Enter Manager Person Number";
         document.getElementById('input-toggle-container').style.display = 'block';
@@ -624,6 +651,11 @@ function moveToStep4() {
         targetLabel.textContent = "New Location";
         targetValue.textContent = appState.new_location;
         if (typeRow) typeRow.style.display = 'none';
+    } else if (appState.currentAction === 'change_job') {
+        actionLabel.textContent = "Change Job";
+        targetLabel.textContent = "New Job";
+        targetValue.textContent = appState.new_job;
+        if (typeRow) typeRow.style.display = 'none';
     } else {
         actionLabel.textContent = "Assign Manager";
         targetLabel.textContent = "New Manager";
@@ -695,8 +727,67 @@ function confirmLocationSelection() {
 // Wire up the new button
 document.getElementById('btn-proceed-loc-confirm')?.addEventListener('click', confirmLocationSelection);
 
+window.startChangeJob = function() {
+    showAllTabs();
+    resetApp();
+    appState.currentAction = 'change_job';
+    switchTab('screen-home');
+}
+
+async function fetchJobs() {
+    try {
+        const res = await fetch(`${API_BASE}/oracle/jobs`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
+        const data = await res.json();
+        appState.available_jobs = data.jobs;
+        
+        const select = document.getElementById('job-select');
+        select.innerHTML = '<option value="">Select a job...</option>';
+        data.jobs.forEach(job => {
+            const opt = document.createElement('option');
+            opt.value = job.JobId;
+            opt.innerText = `${job.Name} (${job.JobCode})`;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to fetch jobs', err);
+    }
+}
+
+function setJobInputMethod(method) {
+    const voiceBtn = document.getElementById('jobVoiceBtn');
+    const typeBtn = document.getElementById('jobTypeBtn');
+    const voiceSec = document.getElementById('job-voice-section');
+    const typeSec = document.getElementById('job-type-section');
+    
+    if (method === 'voice') {
+        voiceBtn.classList.add('active');
+        typeBtn.classList.remove('active');
+        voiceSec.style.display = 'block';
+        typeSec.style.display = 'none';
+    } else {
+        typeBtn.classList.add('active');
+        voiceBtn.classList.remove('active');
+        typeSec.style.display = 'block';
+        voiceSec.style.display = 'none';
+    }
+}
+window.setJobInputMethod = setJobInputMethod;
+
+function confirmJobSelection() {
+    const select = document.getElementById('job-select');
+    if (!select.value) {
+        showToast("Please select a job");
+        return;
+    }
+    appState.selected_job_id = select.value;
+    appState.new_job = select.options[select.selectedIndex].text.split(' (')[0];
+    moveToStep4();
+}
+
+document.getElementById('btn-proceed-job-confirm')?.addEventListener('click', confirmJobSelection);
+
 async function confirmAction() {
-  const action = appState.currentAction === 'change_department' ? 'Change Department' : 'Assign Manager';
+  const action = appState.currentAction === 'change_department' ? 'Change Department' : (appState.currentAction === 'change_location' ? 'Change Location' : (appState.currentAction === 'change_job' ? 'Change Job' : 'Assign Manager'));
   console.log(`${action} clicked...`);
   const btn = document.getElementById('btn-confirm');
   btn.disabled = true;
@@ -757,6 +848,29 @@ async function confirmAction() {
             console.log("Location Success!");
             saveAuditLog("Success");
             showResult(true, `Location changed to ${appState.new_location} successfully for Person ${appState.person_number}.`);
+        } else if (appState.currentAction === 'change_job') {
+            console.log("Calling PATCH /api/oracle/job...");
+            const res = await fetch(`${API_BASE}/oracle/job`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
+              body: JSON.stringify({
+                encodedPersonId: appState.encodedPersonId,
+                WorkRelationshipId: appState.WorkRelationshipId,
+                encodedAssignmentId: appState.encodedAssignmentId,
+                JobId: appState.selected_job_id,
+                JobName: appState.new_job,
+                EffectiveDate: '2025-05-01'
+              })
+            });
+            
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Failed to change job.");
+            }
+            
+            console.log("Job Success!");
+            saveAuditLog("Success");
+            showResult(true, `Job changed to ${appState.new_job} successfully for Person ${appState.person_number}.`);
         } else {
         console.log("Calling POST /api/oracle/assign...");
         const res = await fetch(`${API_BASE}/oracle/assign`, {
@@ -893,7 +1007,11 @@ function resetApp() {
     assignmentSelfLink: null,
     selected_location_id: null,
     new_location: null,
-    available_locations: []
+    available_locations: [],
+    selected_job_id: null,
+    new_job: null,
+    available_jobs: [],
+    current_job_name: null
   };
   audioChunks = [];
   
@@ -930,6 +1048,7 @@ function resetApp() {
   managerDetailsBox.style.display = 'none';
   document.getElementById('dept-selection-box').style.display = 'none';
   document.getElementById('location-selection-box').style.display = 'none';
+  document.getElementById('job-selection-box').style.display = 'none';
   document.getElementById('emp-dept-row').style.display = 'none';
   
   document.querySelector('.tab-btn[data-target="screen-confirmation"]').setAttribute('disabled', 'true');
@@ -1286,6 +1405,85 @@ document.getElementById('btn-proceed-loc-confirm').addEventListener('click', () 
     moveToStep4();
 });
 
+// Job Logic (Voice)
+const jobMicBtn = document.getElementById('job-mic-btn');
+const jobStatusBar = document.getElementById('job-status-bar');
+const jobTranscriptBox = document.getElementById('job-transcript-box');
+const jobTranscriptText = document.getElementById('job-transcript-text');
+
+let isJobRecording = false;
+
+if (jobMicBtn) {
+    jobMicBtn.addEventListener('click', toggleJobRecording);
+}
+
+function toggleJobRecording() {
+    if (isJobRecording) {
+        isJobRecording = false;
+        jobMicBtn.classList.remove('recording');
+        jobStatusBar.textContent = "⌛ Processing voice...";
+        if(mediaRecorder) mediaRecorder.stop();
+    } else {
+        isJobRecording = true;
+        audioChunks = [];
+        jobMicBtn.classList.add('recording');
+        jobStatusBar.textContent = "🔴 Listening for job name...";
+        jobTranscriptBox.style.display = 'block';
+        jobTranscriptText.textContent = "...";
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.start();
+            
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = () => {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+              sendJobToSarvam(audioBlob);
+              stream.getTracks().forEach(track => track.stop());
+            };
+          }).catch(err => {
+            console.error("Mic error:", err);
+            isJobRecording = false;
+            jobMicBtn.classList.remove('recording');
+        });
+    }
+}
+
+async function sendJobToSarvam(audioBlob) {
+    try {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'audio.webm');
+        formData.append('language_code', langSelect.value);
+        
+        const res = await fetch(`${API_BASE}/sarvam/stt`, { method: 'POST', body: formData });
+        const data = await res.json();
+        const transcript = data.transcript;
+        
+        jobTranscriptText.textContent = transcript || "Could not understand.";
+        if (transcript) {
+            const cleanTranscript = transcript.toLowerCase().replace(/[^\w\s]/g, '').trim();
+            const match = appState.available_jobs.find(j => 
+                cleanTranscript.includes(j.Name.toLowerCase()) ||
+                j.Name.toLowerCase().includes(cleanTranscript)
+            );
+            
+            if (match) {
+                appState.new_job = match.Name;
+                document.getElementById('job-select').value = match.JobId;
+                jobStatusBar.textContent = `Matched: ${match.Name}`;
+                jobStatusBar.style.color = '#10b981';
+            } else {
+                jobStatusBar.textContent = "No matching job found. Please try again or select from list.";
+                jobStatusBar.style.color = '#ef4444';
+            }
+        }
+    } catch (err) {
+        console.error("STT Error:", err);
+    }
+}
+
 // Event listeners for the confirmation screen buttons
 document.getElementById('btn-confirm').onclick = confirmAction;
 
@@ -1296,6 +1494,8 @@ document.getElementById('btn-edit').onclick = () => {
     document.getElementById('dept-selection-box').style.display = 'block';
   } else if (appState.currentAction === 'change_location') {
     document.getElementById('location-selection-box').style.display = 'block';
+  } else if (appState.currentAction === 'change_job') {
+    document.getElementById('job-selection-box').style.display = 'block';
   } else {
     managerDetailsBox.style.display = 'block';
   }
