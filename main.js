@@ -426,6 +426,8 @@ function moveToStep2() {
         showDepartmentChangeStep();
     } else if (appState.currentAction === 'change_location') {
         showLocationChangeStep();
+    } else if (appState.currentAction === 'change_job') {
+        showJobChangeStep();
     } else {
         showAssignManagerStep();
     }
@@ -494,19 +496,39 @@ function showLocationChangeStep() {
     setLocInputMethod('voice');
 }
 
+function showJobChangeStep() {
+    console.log("Showing Job Change Step...");
+    appState.workflowStep = 2;
+    updateStepDots(2);
+    
+    // Hide assign manager action buttons (step2-actions)
+    const actionButtons = document.getElementById('step2-actions');
+    if (actionButtons) actionButtons.style.display = 'none';
+    
+    // Show job selection section (job-selection-box)
+    const jobSection = document.getElementById('job-selection-box');
+    if (jobSection) {
+      jobSection.style.display = 'block';
+    }
+    
+    // Update step title
+    mainTitle.textContent = 'Select New Job';
+    
+    // Prepare job selection
+    setJobInputMethod('voice');
+}
+
 btnAssignNew.addEventListener('click', () => {
   if (appState.current_manager_name && 
       appState.current_manager_name !== 'None' && 
       appState.current_manager_name !== 'Not Assigned') {
     showPopup(
-      'âš ï¸ Manager Already Assigned',
-      `This employee already has a manager: ${appState.current_manager_name}. 
-       Are you sure you want to assign a new additional manager?
-       If you want to change the existing manager, click Cancel and choose 'Change Existing' instead.`,
-      'Continue Anyway',
-      'Cancel',
-      () => { moveToStep3(); },
-      () => { closePopup(); }
+      '❌ Manager Already Assigned',
+      'This employee already has an active manager assigned. To assign a different manager, please go back and choose the "Change Existing" option.',
+      'OK',
+      null,
+      () => { closePopup(); },
+      null
     );
   } else {
     moveToStep3();
