@@ -365,6 +365,9 @@ async function fetchEmployeeDetails() {
             // Show manager rows
             if (empManagerRow) empManagerRow.style.display = 'flex';
             if (empStatusRow) empStatusRow.style.display = 'flex';
+            
+            // Fetch available managers
+            fetchManagers();
         }
         
         // Avatar Initials
@@ -437,9 +440,22 @@ function showAssignManagerStep() {
     console.log("Showing Assign Manager Step...");
     appState.workflowStep = 2;
     updateStepDots(2);
-    mainTitle.textContent = "Select Action";
     
-    step2Actions.style.display = 'flex';
+    // Hide assign manager action buttons (step2-actions)
+    const actionButtons = document.getElementById('step2-actions');
+    if (actionButtons) actionButtons.style.display = 'none';
+    
+    // Show manager selection section (manager-selection-box)
+    const mgrSection = document.getElementById('manager-selection-box');
+    if (mgrSection) {
+      mgrSection.style.display = 'block';
+    }
+    
+    // Update step title
+    mainTitle.textContent = 'Select New Manager';
+    
+    // Prepare manager selection
+    setManagerInputMethod('voice');
 }
 
 function showDepartmentChangeStep() {
@@ -1033,7 +1049,8 @@ function resetApp() {
     selected_job_id: null,
     new_job: null,
     available_jobs: [],
-    current_job_name: null
+    current_job_name: null,
+    available_managers: []
   };
   audioChunks = [];
   
@@ -1071,6 +1088,7 @@ function resetApp() {
   document.getElementById('dept-selection-box').style.display = 'none';
   document.getElementById('location-selection-box').style.display = 'none';
   document.getElementById('job-selection-box').style.display = 'none';
+  document.getElementById('manager-selection-box').style.display = 'none';
   document.getElementById('emp-dept-row').style.display = 'none';
   
   document.querySelector('.tab-btn[data-target="screen-confirmation"]').setAttribute('disabled', 'true');
@@ -1519,7 +1537,7 @@ document.getElementById('btn-edit').onclick = () => {
   } else if (appState.currentAction === 'change_job') {
     document.getElementById('job-selection-box').style.display = 'block';
   } else {
-    managerDetailsBox.style.display = 'block';
+    document.getElementById('manager-selection-box').style.display = 'block';
   }
   switchTab('screen-home');
 };
@@ -1709,4 +1727,142 @@ window.logout = function() {
     .style.display = 'none';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
+}
+
+// Manager Custom Logic (Dropdown & Voice)
+async function fetchManagers() {
+    try {
+        const res = await fetch(`${API_BASE}/oracle/managers`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
+        const data = await res.json();
+        appState.available_managers = data.managers || [];
+        
+        const select = document.getElementById('manager-select');
+        select.innerHTML = '<option value="">Select a manager...</option>';
+        appState.available_managers.forEach(mgr => {
+            const opt = document.createElement('option');
+            opt.value = mgr.AssignmentId;
+            opt.dataset.personNumber = mgr.PersonNumber;
+            opt.innerText = `${mgr.DisplayName} (No: ${mgr.PersonNumber})`;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to fetch managers', err);
+    }
+}
+
+function setManagerInputMethod(method) {
+    const voiceBtn = document.getElementById('managerVoiceBtn');
+    const typeBtn = document.getElementById('managerTypeBtn');
+    const voiceSec = document.getElementById('manager-voice-section');
+    const typeSec = document.getElementById('manager-type-section');
+    
+    if (method === 'voice') {
+        voiceBtn.classList.add('active');
+        typeBtn.classList.remove('active');
+        voiceSec.style.display = 'block';
+        typeSec.style.display = 'none';
+    } else {
+        typeBtn.classList.add('active');
+        voiceBtn.classList.remove('active');
+        typeSec.style.display = 'block';
+        voiceSec.style.display = 'none';
+    }
+}
+
+function confirmManagerSelection() {
+    const select = document.getElementById('manager-select');
+    if (!select.value) {
+        showToast("Please select a manager");
+        return;
+    }
+    appState.ManagerAssignmentId = select.value;
+    const selectedOption = select.options[select.selectedIndex];
+    appState.manager_person_number = selectedOption.dataset.personNumber;
+    appState.manager_display_name = selectedOption.text.split(' (No:')[0];
+    
+    console.log("Selected Manager:", appState.manager_display_name, "Assignment ID:", appState.ManagerAssignmentId, "Number:", appState.manager_person_number);
+    moveToStep4();
+}
+
+document.getElementById('btn-proceed-manager-confirm')?.addEventListener('click', confirmManagerSelection);
+
+// Manager Voice STT Logic
+const managerMicBtn = document.getElementById('manager-mic-btn');
+const managerStatusBar = document.getElementById('manager-status-bar');
+const managerTranscriptBox = document.getElementById('manager-transcript-box');
+const managerTranscriptText = document.getElementById('manager-transcript-text');
+
+let isManagerRecording = false;
+
+if (managerMicBtn) {
+    managerMicBtn.addEventListener('click', toggleManagerRecording);
+}
+
+function toggleManagerRecording() {
+    if (isManagerRecording) {
+        isManagerRecording = false;
+        managerMicBtn.classList.remove('recording');
+        managerStatusBar.textContent = "⌛ Processing voice...";
+        if(mediaRecorder) mediaRecorder.stop();
+    } else {
+        isManagerRecording = true;
+        audioChunks = [];
+        managerMicBtn.classList.add('recording');
+        managerStatusBar.textContent = "🔴 Listening for manager name...";
+        managerTranscriptBox.style.display = 'block';
+        managerTranscriptText.textContent = "...";
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.start();
+            
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = () => {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+              sendManagerToSarvam(audioBlob);
+              stream.getTracks().forEach(track => track.stop());
+            };
+          }).catch(err => {
+            console.error("Mic error:", err);
+            isManagerRecording = false;
+            managerMicBtn.classList.remove('recording');
+        });
+    }
+}
+
+async function sendManagerToSarvam(audioBlob) {
+    try {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'audio.webm');
+        formData.append('language_code', langSelect.value);
+        
+        const res = await fetch(`${API_BASE}/sarvam/stt`, { method: 'POST', body: formData });
+        const data = await res.json();
+        const transcript = data.transcript;
+        
+        managerTranscriptText.textContent = transcript || "Could not understand.";
+        if (transcript) {
+            const cleanTranscript = transcript.toLowerCase().replace(/[^\w\s]/g, '').trim();
+            const match = appState.available_managers.find(m => 
+                cleanTranscript.includes(m.DisplayName.toLowerCase()) ||
+                m.DisplayName.toLowerCase().includes(cleanTranscript)
+            );
+            
+            if (match) {
+                appState.ManagerAssignmentId = match.AssignmentId;
+                appState.manager_person_number = match.PersonNumber;
+                appState.manager_display_name = match.DisplayName;
+                document.getElementById('manager-select').value = match.AssignmentId;
+                managerStatusBar.textContent = `Matched: ${match.DisplayName}`;
+                managerStatusBar.style.color = '#10b981';
+            } else {
+                managerStatusBar.textContent = "No matching manager found. Please try again or select from list.";
+                managerStatusBar.style.color = '#ef4444';
+            }
+        }
+    } catch (err) {
+        console.error("STT Error:", err);
+    }
 }
