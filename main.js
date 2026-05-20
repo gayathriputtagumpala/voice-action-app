@@ -1866,3 +1866,9 @@ async function sendManagerToSarvam(audioBlob) {
         console.error("STT Error:", err);
     }
 }
+
+// Expose toggle methods globally on window for inline HTML onclick triggers
+window.setLocInputMethod = setLocInputMethod;
+window.setDeptInputMethod = setDeptInputMethod;
+window.setJobInputMethod = setJobInputMethod;
+window.setManagerInputMethod = setManagerInputMethod;
