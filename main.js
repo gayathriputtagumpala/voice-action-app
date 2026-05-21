@@ -1,5 +1,22 @@
 const API_BASE = 'https://voice-action-server.onrender.com/api';
 
+// Multi-company support configuration
+const COMPANY_ORACLE_URLS = {
+  'companya': 'https://fa-eubg-test-saasfademo1.ds-fa.oraclepdemos.com',
+  'companyb': 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com'
+};
+
+const DEFAULT_ORACLE_BASE_URL = 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com';
+
+// Read optional company code from URL parameter
+const urlParams = new URLSearchParams(window.location.search);
+const company = urlParams.get('company');
+
+// Determine the active Oracle Base URL
+const ORACLE_BASE_URL = company && COMPANY_ORACLE_URLS[company.toLowerCase()]
+  ? COMPANY_ORACLE_URLS[company.toLowerCase()]
+  : DEFAULT_ORACLE_BASE_URL;
+
 // State Variables
 let appState = {
   workflowStep: 1, // 1: Get Employee, 2: Wait for button, 3: Get Manager, 4: Confirm
@@ -33,7 +50,11 @@ let appState = {
   available_positions: [],
   selected_position_id: null,
   new_position: null,
-  current_position_name: null
+  current_position_name: null,
+  available_grades: [],
+  selected_grade_id: null,
+  new_grade: null,
+  current_grade_name: null
 };
 
 // DOM Elements
@@ -308,6 +329,7 @@ async function fetchEmployeeDetails() {
         appState.BusinessUnitName = data.BusinessUnitName;
         appState.current_job_name = data.JobName;
         appState.current_position_name = data.PositionName;
+        appState.current_grade_name = data.GradeName;
 
         console.log("Employee found:", appState.worker_display_name);
         
@@ -378,6 +400,20 @@ async function fetchEmployeeDetails() {
 
             // Fetch available positions for Step 3
             fetchPositions();
+        } else if (appState.currentAction === 'change_grade') {
+            if (empDeptRow) empDeptRow.style.display = 'flex';
+            if (empCurrentDept) {
+                empCurrentDept.textContent = appState.current_grade_name || 'Not Assigned';
+                empDeptRow.querySelector('.label').innerText = 'Current Grade';
+            }
+            
+            // Hide manager rows
+            if (empManagerRow) empManagerRow.style.display = 'none';
+            if (empStatusRow) empStatusRow.style.display = 'none';
+            if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
+
+            // Fetch available grades for Step 3
+            fetchGrades();
         } else {
             if (empDeptRow) empDeptRow.style.display = 'none';
             
@@ -653,6 +689,14 @@ function moveToStep3() {
         
         document.getElementById('position-selection-box').style.display = 'block';
         setPositionInputMethod('voice');
+    } else if (appState.currentAction === 'change_grade') {
+        mainTitle.textContent = "Select New Grade";
+        document.getElementById('input-toggle-container').style.display = 'none';
+        document.getElementById('typeSection').style.display = 'none';
+        document.getElementById('voiceSection').style.display = 'none';
+        
+        document.getElementById('grade-selection-box').style.display = 'block';
+        setGradeInputMethod('voice');
     } else {
         mainTitle.textContent = "Enter Manager Person Number";
         document.getElementById('input-toggle-container').style.display = 'block';
@@ -749,6 +793,11 @@ function moveToStep4() {
         actionLabel.textContent = "Change Position";
         targetLabel.textContent = "New Position";
         targetValue.textContent = appState.new_position;
+        if (typeRow) typeRow.style.display = 'none';
+    } else if (appState.currentAction === 'change_grade') {
+        actionLabel.textContent = "Change Grade";
+        targetLabel.textContent = "New Grade";
+        targetValue.textContent = appState.new_grade;
         if (typeRow) typeRow.style.display = 'none';
     } else {
         actionLabel.textContent = "Assign Manager";
@@ -940,8 +989,68 @@ function confirmPositionSelection() {
 
 document.getElementById('btn-proceed-pos-confirm')?.addEventListener('click', confirmPositionSelection);
 
+window.startChangeGrade = function() {
+    showAllTabs();
+    resetApp();
+    appState.currentAction = 'change_grade';
+    switchTab('screen-home');
+}
+
+async function fetchGrades() {
+    try {
+        console.log("Fetching grades...");
+        const res = await fetch(`${API_BASE}/oracle/grades`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
+        const data = await res.json();
+        appState.available_grades = data.grades || [];
+        
+        const select = document.getElementById('grade-select');
+        select.innerHTML = '<option value="">Select a grade...</option>';
+        appState.available_grades.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.GradeId;
+            opt.innerText = `${g.Name} (${g.GradeCode})`;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to fetch grades', err);
+    }
+}
+
+function setGradeInputMethod(method) {
+    const voiceBtn = document.getElementById('gradeVoiceBtn');
+    const typeBtn = document.getElementById('gradeTypeBtn');
+    const voiceSec = document.getElementById('grade-voice-section');
+    const typeSec = document.getElementById('grade-type-section');
+    
+    if (method === 'voice') {
+        voiceBtn.classList.add('active');
+        typeBtn.classList.remove('active');
+        voiceSec.style.display = 'block';
+        typeSec.style.display = 'none';
+    } else {
+        typeBtn.classList.add('active');
+        voiceBtn.classList.remove('active');
+        typeSec.style.display = 'block';
+        voiceSec.style.display = 'none';
+    }
+}
+window.setGradeInputMethod = setGradeInputMethod;
+
+function confirmGradeSelection() {
+    const select = document.getElementById('grade-select');
+    if (!select.value) {
+        showToast("Please select a grade");
+        return;
+    }
+    appState.selected_grade_id = select.value;
+    appState.new_grade = select.options[select.selectedIndex].text.split(' (')[0];
+    moveToStep4();
+}
+
+document.getElementById('btn-proceed-grade-confirm')?.addEventListener('click', confirmGradeSelection);
+
 async function confirmAction() {
-  const action = appState.currentAction === 'change_department' ? 'Change Department' : (appState.currentAction === 'change_location' ? 'Change Location' : (appState.currentAction === 'change_job' ? 'Change Job' : (appState.currentAction === 'change_position' ? 'Change Position' : 'Assign Manager')));
+  const action = appState.currentAction === 'change_department' ? 'Change Department' : (appState.currentAction === 'change_location' ? 'Change Location' : (appState.currentAction === 'change_job' ? 'Change Job' : (appState.currentAction === 'change_position' ? 'Change Position' : (appState.currentAction === 'change_grade' ? 'Change Grade' : 'Assign Manager'))));
   console.log(`${action} clicked...`);
   const btn = document.getElementById('btn-confirm');
   btn.disabled = true;
@@ -1048,6 +1157,29 @@ async function confirmAction() {
             console.log("Position Success!");
             saveAuditLog("Success");
             showResult(true, `Position changed to ${appState.new_position} successfully for Person ${appState.person_number}.`);
+        } else if (appState.currentAction === 'change_grade') {
+            console.log("Calling PATCH /api/oracle/grade...");
+            const res = await fetch(`${API_BASE}/oracle/grade`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
+              body: JSON.stringify({
+                encodedPersonId: appState.encodedPersonId,
+                WorkRelationshipId: appState.WorkRelationshipId,
+                encodedAssignmentId: appState.encodedAssignmentId,
+                GradeId: appState.selected_grade_id,
+                GradeName: appState.new_grade,
+                EffectiveDate: '2025-05-01'
+              })
+            });
+            
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Failed to change grade.");
+            }
+            
+            console.log("Grade Success!");
+            saveAuditLog("Success");
+            showResult(true, `Grade changed to ${appState.new_grade} successfully for Person ${appState.person_number}.`);
         } else {
         console.log("Calling POST /api/oracle/assign...");
         const res = await fetch(`${API_BASE}/oracle/assign`, {
@@ -1194,7 +1326,11 @@ function resetApp() {
     available_positions: [],
     selected_position_id: null,
     new_position: null,
-    current_position_name: null
+    current_position_name: null,
+    available_grades: [],
+    selected_grade_id: null,
+    new_grade: null,
+    current_grade_name: null
   };
   audioChunks = [];
   
@@ -1234,6 +1370,7 @@ function resetApp() {
   document.getElementById('job-selection-box').style.display = 'none';
   document.getElementById('manager-selection-box').style.display = 'none';
   document.getElementById('position-selection-box').style.display = 'none';
+  document.getElementById('grade-selection-box').style.display = 'none';
   document.getElementById('emp-dept-row').style.display = 'none';
   
   document.querySelector('.tab-btn[data-target="screen-confirmation"]').setAttribute('disabled', 'true');
@@ -1826,7 +1963,6 @@ function closePopup() {
 }
 
 async function handleLogin() {
-  const oracleUrl = 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com';
   const username = document.getElementById('login-username')
     .value.trim();
   const password = document.getElementById('login-password')
@@ -1835,14 +1971,13 @@ async function handleLogin() {
   const btnText = document.getElementById('login-btn-text');
   const spinner = document.getElementById('login-spinner');
   
-  // Validation
   if (!username || !password) {
-    errorEl.textContent = 'Please fill in all fields';
+    errorEl.textContent = 'Please enter username and password';
     errorEl.style.display = 'block';
     return;
   }
   
-  // Show loading
+  // Show loading state
   btnText.style.display = 'none';
   spinner.style.display = 'inline';
   errorEl.style.display = 'none';
@@ -1851,20 +1986,24 @@ async function handleLogin() {
   try {
     const response = await fetch(`${API_BASE}/auth/verify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
-      body: JSON.stringify({ oracleUrl, username, password })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        oracleUrl: ORACLE_BASE_URL,
+        username: username,
+        password: password
+      })
     });
     
     const data = await response.json();
     
     if (response.ok && data.success) {
-      // Save session - store auth token and oracle URL
+      // Save session
       sessionStorage.setItem('loggedIn', 'true');
       sessionStorage.setItem('userName', username);
       sessionStorage.setItem('oracleUrl', data.oracleUrl);
       sessionStorage.setItem('oracleAuth', data.authToken);
       
-      // Update app state with dynamic credentials
+      // Update appState
       appState.oracleUrl = data.oracleUrl;
       appState.oracleAuth = data.authToken;
       
@@ -1878,17 +2017,16 @@ async function handleLogin() {
       const userBadge = document.getElementById('user-badge');
       if (userBadge) userBadge.textContent = username;
       
-      console.log('Login successful for:', username);
-      
     } else {
-      errorEl.textContent = data.error || 'Login failed';
+      errorEl.textContent = data.error || 
+        'Invalid username or password';
       errorEl.style.display = 'block';
     }
     
   } catch (err) {
-    errorEl.textContent = 'Connection error. Please try again.';
+    errorEl.textContent = 
+      'Connection failed. Please try again.';
     errorEl.style.display = 'block';
-    console.error('Login error:', err);
     
   } finally {
     btnText.style.display = 'inline';
@@ -1916,8 +2054,8 @@ window.addEventListener('load', () => {
   if (loggedIn === 'true') {
     const oracleUrl = sessionStorage.getItem('oracleUrl');
     
-    // Force logout if the stored URL is the old maintenance URL
-    if (oracleUrl !== 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com') {
+    // Force logout if the stored URL doesn't match active ORACLE_BASE_URL config
+    if (oracleUrl !== ORACLE_BASE_URL) {
       console.log('Stale session detected. Forcing logout.');
       sessionStorage.clear();
       return;

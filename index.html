@@ -47,6 +47,10 @@
             </span>
           </button>
         </div>
+
+        <p class="login-note" style="text-align: center; margin-top: 16px; color: var(--text-muted); font-size: 14px;">
+          Sign in with your Oracle Fusion credentials
+        </p>
         
         <p class="login-footer">
           Your credentials are verified directly against 
@@ -135,11 +139,11 @@
               <div class="card-description">Update employee work position</div>
             </div>
             
-            <div class="action-card coming-soon" onclick="showToast('This feature is coming soon!')">
-              <div class="card-badge badge-coming-soon">SOON</div>
-              <div class="card-icon icon-dark">🏖️</div>
-              <div class="card-title">Apply Leave</div>
-              <div class="card-description">Apply for leave or time off</div>
+            <div class="action-card active" onclick="startChangeGrade()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon icon-purple">🎓</div>
+              <div class="card-title">Change Grade</div>
+              <div class="card-description">Update employee work grade</div>
             </div>
           </div>
         </section>
@@ -424,6 +428,41 @@
               </div>
 
               <button id="btn-proceed-pos-confirm" class="btn btn-primary mt-4">Proceed to Confirm</button>
+           </div>
+
+           <!-- Grade Selection (Step 3 for Grade Flow) -->
+           <div id="grade-selection-box" class="employee-card" style="display:none;">
+              <h2 class="step-title" style="font-size:18px;">Select New Grade</h2>
+              <div class="input-toggle" id="grade-input-toggle">
+                <button class="toggle-btn" onclick="setGradeInputMethod('type')" id="gradeTypeBtn">⌨️ Type</button>
+                <button class="toggle-btn active" onclick="setGradeInputMethod('voice')" id="gradeVoiceBtn">🎤 Voice</button>
+              </div>
+              
+              <div id="grade-type-section" style="display:none; width:100%;">
+                 <select id="grade-select" class="person-input" style="letter-spacing: normal; font-size: 16px; margin-bottom: 20px;">
+                   <option value="">Select a grade...</option>
+                 </select>
+               </div>
+
+              <div id="grade-voice-section" style="width:100%;">
+                <div class="mic-container" style="margin: 20px 0;">
+                  <button id="grade-mic-btn" class="mic-btn" style="width: 72px; height: 72px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                      <line x1="12" y1="19" x2="12" y2="23"></line>
+                      <line x1="8" y1="23" x2="16" y2="23"></line>
+                     </svg>
+                  </button>
+                </div>
+                <p class="status-bar" id="grade-status-bar">Press mic and speak grade name</p>
+              </div>
+
+              <div class="glass-card" id="grade-transcript-box" style="display:none; margin-top:10px;">
+                <p id="grade-transcript-text" class="transcript-text">...</p>
+              </div>
+
+              <button id="btn-proceed-grade-confirm" class="btn btn-primary mt-4">Proceed to Confirm</button>
            </div>
          </section>
 
