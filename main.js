@@ -488,6 +488,8 @@ function moveToStep2() {
         showJobChangeStep();
     } else if (appState.currentAction === 'change_position') {
         showPositionChangeStep();
+    } else if (appState.currentAction === 'change_grade') {
+        showGradeChangeStep();
     } else {
         showAssignManagerStep();
     }
@@ -611,6 +613,28 @@ function showPositionChangeStep() {
     
     // Prepare position selection
     setPositionInputMethod('voice');
+}
+
+function showGradeChangeStep() {
+    console.log("Showing Grade Change Step...");
+    appState.workflowStep = 2;
+    updateStepDots(2);
+    
+    // Hide assign manager action buttons (step2-actions)
+    const actionButtons = document.getElementById('step2-actions');
+    if (actionButtons) actionButtons.style.display = 'none';
+    
+    // Show grade selection section (grade-selection-box)
+    const gradeSection = document.getElementById('grade-selection-box');
+    if (gradeSection) {
+      gradeSection.style.display = 'block';
+    }
+    
+    // Update step title
+    mainTitle.textContent = 'Select New Grade';
+    
+    // Prepare grade selection
+    setGradeInputMethod('voice');
 }
 
 btnAssignNew.addEventListener('click', () => {
