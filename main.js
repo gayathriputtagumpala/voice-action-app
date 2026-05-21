@@ -1093,7 +1093,7 @@ async function confirmAction() {
             encodedAssignmentId: appState.encodedAssignmentId,
             DepartmentId: appState.selected_department_id,
             DepartmentName: appState.new_department,
-            EffectiveDate: '2025-05-01'
+            EffectiveDate: appState.effective_date
           })
         });
         
@@ -1123,7 +1123,7 @@ async function confirmAction() {
                 encodedAssignmentId: appState.encodedAssignmentId,
                 LocationId: appState.selected_location_id,
                 LocationName: appState.new_location,
-                EffectiveDate: '2025-05-01'
+                EffectiveDate: appState.effective_date
               })
             });
             
@@ -1146,7 +1146,7 @@ async function confirmAction() {
                 encodedAssignmentId: appState.encodedAssignmentId,
                 JobId: appState.selected_job_id,
                 JobName: appState.new_job,
-                EffectiveDate: '2025-05-01'
+                EffectiveDate: appState.effective_date
               })
             });
             
@@ -1169,7 +1169,7 @@ async function confirmAction() {
                 encodedAssignmentId: appState.encodedAssignmentId,
                 PositionId: appState.selected_position_id,
                 PositionName: appState.new_position,
-                EffectiveDate: '2025-05-01'
+                EffectiveDate: appState.effective_date
               })
             });
             
@@ -1192,7 +1192,7 @@ async function confirmAction() {
                 encodedAssignmentId: appState.encodedAssignmentId,
                 GradeId: appState.selected_grade_id,
                 GradeName: appState.new_grade,
-                EffectiveDate: '2025-05-01'
+                EffectiveDate: appState.effective_date
               })
             });
             
