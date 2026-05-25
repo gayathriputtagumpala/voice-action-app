@@ -1044,3 +1044,14 @@ body::after {
   text-align: center;
   font-size: 15px;
 }
+
+.input-group input[type="checkbox"] {
+  width: auto !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  height: auto !important;
+  cursor: pointer;
+}
+
