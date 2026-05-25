@@ -2291,6 +2291,17 @@ window.startHireEmployee = function() {
   document.getElementById('hire-job-code').value = '';
   document.getElementById('hire-location-code').value = '';
 
+  // Reset Voice/Form toggle options to form manual entry
+  if (typeof setHireInputMethod === 'function') {
+    setHireInputMethod('type');
+  }
+  const trText = document.getElementById('hire-transcript-text');
+  if (trText) trText.textContent = 'Waiting for voice input...';
+  const parsedRes = document.getElementById('hire-parsed-results');
+  if (parsedRes) parsedRes.style.display = 'none';
+  const hireTrBox = document.getElementById('hire-transcript-box');
+  if (hireTrBox) hireTrBox.style.display = 'none';
+
   // Fetch legal employers and business units
   fetchLegalEmployers();
   fetchBusinessUnits();
@@ -2548,4 +2559,268 @@ async function confirmHireEmployee() {
     // Restore default click handler for standard workflows
     btn.onclick = confirmAction;
   }
+}
+
+// ==========================================
+// HIRE EMPLOYEE - VOICE & TEXT LOGIC
+// ==========================================
+
+window.setHireInputMethod = function(method) {
+  const formSec = document.getElementById('hire-form-section');
+  const voiceSec = document.getElementById('hire-voice-section');
+  const typeBtn = document.getElementById('hireTypeBtn');
+  const voiceBtn = document.getElementById('hireVoiceBtn');
+  
+  if (method === 'type') {
+    if (formSec) formSec.style.display = 'block';
+    if (voiceSec) voiceSec.style.display = 'none';
+    if (typeBtn) typeBtn.classList.add('active');
+    if (voiceBtn) voiceBtn.classList.remove('active');
+  } else {
+    if (formSec) formSec.style.display = 'none';
+    if (voiceSec) voiceSec.style.display = 'block';
+    if (voiceBtn) voiceBtn.classList.add('active');
+    if (typeBtn) typeBtn.classList.remove('active');
+  }
+}
+
+let isHireRecording = false;
+let hireMediaRecorder = null;
+let hireAudioChunks = [];
+let parsedHireFields = {};
+
+window.toggleHireRecording = function() {
+  const micBtn = document.getElementById('hire-mic-btn');
+  const statusBar = document.getElementById('hire-status-bar');
+  const transcriptBox = document.getElementById('hire-transcript-box');
+  const transcriptText = document.getElementById('hire-transcript-text');
+  
+  if (isHireRecording) {
+    isHireRecording = false;
+    if (micBtn) micBtn.classList.remove('recording');
+    if (statusBar) {
+      statusBar.textContent = "⏳ Processing your voice...";
+      statusBar.style.color = 'var(--primary)';
+    }
+    if (hireMediaRecorder) hireMediaRecorder.stop();
+  } else {
+    isHireRecording = true;
+    hireAudioChunks = [];
+    if (micBtn) micBtn.classList.add('recording');
+    if (statusBar) {
+      statusBar.textContent = "🔴 Listening... click mic to stop";
+      statusBar.style.color = 'var(--danger)';
+    }
+    if (transcriptBox) transcriptBox.style.display = 'block';
+    if (transcriptText) transcriptText.textContent = "Listening...";
+    
+    // Hide parsed results while starting new recording
+    const parsedRes = document.getElementById('hire-parsed-results');
+    if (parsedRes) parsedRes.style.display = 'none';
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        hireMediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        hireMediaRecorder.start();
+        
+        hireMediaRecorder.ondataavailable = e => {
+          hireAudioChunks.push(e.data);
+        };
+        
+        hireMediaRecorder.onstop = () => {
+          console.log("Hire MediaRecorder stopped. Creating blob...");
+          const audioBlob = new Blob(hireAudioChunks, { type: 'audio/webm' });
+          sendHireToSarvam(audioBlob);
+          stream.getTracks().forEach(track => track.stop());
+        };
+      }).catch(err => {
+        console.error("Microphone access failed:", err);
+        if (statusBar) {
+          statusBar.textContent = "Error: Could not access microphone.";
+          statusBar.style.color = 'var(--danger)';
+        }
+        isHireRecording = false;
+        if (micBtn) micBtn.classList.remove('recording');
+      });
+  }
+}
+
+async function sendHireToSarvam(audioBlob) {
+  const statusBar = document.getElementById('hire-status-bar');
+  const transcriptText = document.getElementById('hire-transcript-text');
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'audio.webm');
+    formData.append('language_code', 'unknown');
+    
+    const sttRes = await fetch(`${API_BASE}/sarvam/stt`, { method: 'POST', body: formData });
+    if (!sttRes.ok) throw new Error("Voice recognition failed.");
+    
+    const sttData = await sttRes.json();
+    const transcript = sttData.transcript;
+    
+    if (transcriptText) transcriptText.textContent = `"${transcript}"`;
+    if (statusBar) {
+      statusBar.textContent = "Voice recognized! Parsing details...";
+      statusBar.style.color = 'var(--success)';
+    }
+    
+    // Parse fields from transcript using simple regex and keyword matching
+    parseFieldsFromTranscript(transcript);
+    
+  } catch (err) {
+    console.error("Hire STT Error:", err);
+    if (statusBar) {
+      statusBar.textContent = "Voice input failed. Please try again.";
+      statusBar.style.color = 'var(--danger)';
+    }
+  }
+}
+
+function parseFieldsFromTranscript(transcript) {
+  const parsedFields = document.getElementById('hire-parsed-fields');
+  const parsedResults = document.getElementById('hire-parsed-results');
+  
+  const text = transcript.toLowerCase();
+  
+  // 1. Person Number
+  let personNumber = "";
+  const personMatch = text.match(/(?:person number|number|id|emp|employee number)\s*(?:is|to|be|of)?\s*([a-z0-9]+)/i);
+  if (personMatch) {
+    personNumber = personMatch[1].toUpperCase();
+  } else {
+    // fallback: find first alphanumeric token longer than 4 chars or containing digits
+    const tokens = text.split(/\s+/);
+    for (const t of tokens) {
+      if (/\d+/.test(t) && t.length >= 3) {
+        personNumber = t.toUpperCase().replace(/[^\w]/g, '');
+        break;
+      }
+    }
+  }
+  
+  // 2. Name
+  let firstName = "";
+  let lastName = "";
+  // look for "hire employee [First] [Last]" or "employee [First] [Last]" or "name [First] [Last]"
+  const nameMatch = text.match(/(?:hire employee|employee|name|named|for)\s+([a-z]+)\s+([a-z]+)/i);
+  if (nameMatch) {
+    firstName = capitalizeWord(nameMatch[1]);
+    lastName = capitalizeWord(nameMatch[2]);
+  } else {
+    // fallback: search first capitalized words in the transcript or first two words after "hire"
+    const hireIdx = text.indexOf("hire");
+    if (hireIdx !== -1) {
+      const words = transcript.substring(hireIdx + 4).trim().split(/\s+/);
+      if (words.length >= 2) {
+        firstName = capitalizeWord(words[0]);
+        lastName = capitalizeWord(words[1]);
+      }
+    }
+  }
+  
+  // 3. Start Date
+  let startDate = new Date().toISOString().split('T')[0];
+  const dateMatch = text.match(/(?:start|starting|date|on)\s*(?:date|on|of|from)?\s*(\d{4}-\d{2}-\d{2})/);
+  if (dateMatch) {
+    startDate = dateMatch[1];
+  } else {
+    // support other common formats like DD-MM-YYYY
+    const dateMatch2 = text.match(/(\d{2})[-/](\d{2})[-/](\d{4})/);
+    if (dateMatch2) {
+      startDate = `${dateMatch2[3]}-${dateMatch2[2]}-${dateMatch2[1]}`;
+    }
+  }
+  
+  // 4. Job Code
+  let jobCode = "";
+  const jobMatch = text.match(/(?:job|job code|code)\s*(?:is|to|be)?\s*([a-z0-9]+)/i);
+  if (jobMatch) {
+    jobCode = jobMatch[1].toUpperCase();
+  }
+  
+  // 5. Location Code
+  let locationCode = "";
+  const locMatch = text.match(/(?:location|location code|loc)\s*(?:is|to|be)?\s*([a-z0-9]+)/i);
+  if (locMatch) {
+    locationCode = locMatch[1].toUpperCase();
+  }
+  
+  // 6. Legal Employer & Business Unit
+  let legalEmployer = "";
+  const legalSelect = document.getElementById('hire-legal-employer');
+  if (legalSelect) {
+    const options = Array.from(legalSelect.options).map(o => o.value).filter(v => v);
+    for (const opt of options) {
+      if (text.includes(opt.toLowerCase())) {
+        legalEmployer = opt;
+        break;
+      }
+    }
+    if (!legalEmployer && options.length > 0) legalEmployer = options[0];
+  }
+  
+  let businessUnit = "";
+  const buSelect = document.getElementById('hire-business-unit');
+  if (buSelect) {
+    const options = Array.from(buSelect.options).map(o => o.value).filter(v => v);
+    for (const opt of options) {
+      if (text.includes(opt.toLowerCase())) {
+        businessUnit = opt;
+        break;
+      }
+    }
+    if (!businessUnit && options.length > 0) businessUnit = options[0];
+  }
+  
+  // Save parsed values
+  parsedHireFields = {
+    PersonNumber: personNumber,
+    FirstName: firstName,
+    LastName: lastName,
+    StartDate: startDate,
+    LegalEmployerName: legalEmployer,
+    BusinessUnitName: businessUnit,
+    JobCode: jobCode,
+    LocationCode: locationCode
+  };
+  
+  // Update parsed details UI
+  if (parsedFields) {
+    parsedFields.innerHTML = `
+      <div><strong>Person Number:</strong> ${personNumber || '<span style="color:var(--danger)">Not detected</span>'}</div>
+      <div><strong>Name:</strong> ${firstName && lastName ? `${firstName} ${lastName}` : '<span style="color:var(--danger)">Not detected</span>'}</div>
+      <div><strong>Start Date:</strong> ${startDate}</div>
+      <div><strong>Legal Employer:</strong> ${legalEmployer || 'Not detected'}</div>
+      <div><strong>Business Unit:</strong> ${businessUnit || 'Not detected'}</div>
+      <div><strong>Job Code:</strong> ${jobCode || 'Not provided'}</div>
+      <div><strong>Location Code:</strong> ${locationCode || 'Not provided'}</div>
+    `;
+  }
+  
+  if (parsedResults) parsedResults.style.display = 'block';
+}
+
+function capitalizeWord(s) {
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+window.applyParsedHireData = function() {
+  // Populate form fields with parsed data
+  if (parsedHireFields.PersonNumber) document.getElementById('hire-person-number').value = parsedHireFields.PersonNumber;
+  if (parsedHireFields.FirstName) document.getElementById('hire-first-name').value = parsedHireFields.FirstName;
+  if (parsedHireFields.LastName) document.getElementById('hire-last-name').value = parsedHireFields.LastName;
+  if (parsedHireFields.StartDate) document.getElementById('hire-start-date').value = parsedHireFields.StartDate;
+  if (parsedHireFields.LegalEmployerName) document.getElementById('hire-legal-employer').value = parsedHireFields.LegalEmployerName;
+  if (parsedHireFields.BusinessUnitName) document.getElementById('hire-business-unit').value = parsedHireFields.BusinessUnitName;
+  if (parsedHireFields.JobCode) document.getElementById('hire-job-code').value = parsedHireFields.JobCode;
+  if (parsedHireFields.LocationCode) document.getElementById('hire-location-code').value = parsedHireFields.LocationCode;
+  
+  // Switch back to form view so they can review and submit
+  setHireInputMethod('type');
+  
+  // validation and proceed
+  proceedHireConfirm();
 }

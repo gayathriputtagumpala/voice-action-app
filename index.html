@@ -481,10 +481,53 @@
             <div id="hire-employee-box" style="display:none;">
               <h2 class="step-title">Hire New Employee</h2>
               <p style="color:#64748b; font-size:13px; margin-bottom:20px;">
-                Fill in the details to hire a new employee
+                Choose to fill details manually or speak to describe the employee
               </p>
 
-              <div class="hire-form">
+              <!-- Input toggle for Hire Flow -->
+              <div class="input-toggle" style="margin-bottom: 20px;">
+                <button id="hireTypeBtn" class="toggle-btn active" onclick="setHireInputMethod('type')">⌨️ Form</button>
+                <button id="hireVoiceBtn" class="toggle-btn" onclick="setHireInputMethod('voice')">🎤 Voice</button>
+              </div>
+
+              <!-- Voice Section for Hire Flow -->
+              <div id="hire-voice-section" style="display:none; text-align:center; width:100%; margin-bottom: 20px;">
+                <div class="mic-container" style="margin: 20px auto;">
+                  <button id="hire-mic-btn" class="mic-btn" onclick="toggleHireRecording()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                      <line x1="12" y1="19" x2="12" y2="23"></line>
+                      <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+                <p id="hire-status-bar" class="status-bar">Press mic and describe the employee you want to hire</p>
+                <p class="subtitle" style="font-size:12px; margin-top:8px; color:var(--text-muted);">
+                  Example: "Hire employee Arun Mehta with Person Number TEST0199 starting on 2025-05-01 as US1 Legal Entity and US1 Business Unit"
+                </p>
+                
+                <!-- Audio transcript display -->
+                <div class="glass-card" id="hire-transcript-box" style="display:none; margin-top:20px; padding:16px; border-radius:12px;">
+                  <p id="hire-transcript-text" class="transcript-text" style="margin-bottom:12px; font-style:italic;">Waiting for voice input...</p>
+                  <div id="hire-parsed-results" style="display:none; text-align:left; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; margin-top:12px;">
+                    <h4 style="margin:0 0 8px 0; color:var(--primary); font-size:14px;">Parsed Details:</h4>
+                    <div id="hire-parsed-fields" style="font-size:13px; display:flex; flex-direction:column; gap:4px; color:var(--text-secondary);">
+                      <!-- Fields will be dynamically populated -->
+                    </div>
+                    <button class="search-btn" onclick="applyParsedHireData()" style="margin-top:12px; font-size:13px; padding:8px 16px;">
+                      Apply & Proceed
+                    </button>
+                  </div>
+                </div>
+
+                <button onclick="goHome()" style="width:100%; padding:12px; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#64748b; cursor:pointer; margin-top:20px; font-size:14px;">
+                  Cancel
+                </button>
+              </div>
+
+              <!-- Form Section for Hire Flow -->
+              <div id="hire-form-section" class="hire-form">
                 <div class="hire-row">
                   <div class="input-group">
                     <label>Person Number *</label>
