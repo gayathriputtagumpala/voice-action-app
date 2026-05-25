@@ -145,6 +145,18 @@
               <div class="card-title">Change Grade</div>
               <div class="card-description">Update employee work grade</div>
             </div>
+
+            <div class="action-card active" onclick="startHireEmployee()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon-box" 
+                   style="background: linear-gradient(135deg, #10b981, #059669)">
+                👤
+              </div>
+              <div class="card-title">Hire Employee</div>
+              <div class="card-description">
+                Add a new employee to Oracle Fusion HCM
+              </div>
+            </div>
           </div>
         </section>
 
@@ -463,8 +475,87 @@
               </div>
 
               <button id="btn-proceed-grade-confirm" class="btn btn-primary mt-4">Proceed to Confirm</button>
-           </div>
-         </section>
+            </div>
+
+            <!-- Hire Employee Form Box -->
+            <div id="hire-employee-box" style="display:none;">
+              <h2 class="step-title">Hire New Employee</h2>
+              <p style="color:#64748b; font-size:13px; margin-bottom:20px;">
+                Fill in the details to hire a new employee
+              </p>
+
+              <div class="hire-form">
+                <div class="hire-row">
+                  <div class="input-group">
+                    <label>Person Number *</label>
+                    <input type="text" id="hire-person-number" placeholder="e.g. EMP001">
+                  </div>
+                </div>
+
+                <div class="hire-row two-col">
+                  <div class="input-group">
+                    <label>First Name *</label>
+                    <input type="text" id="hire-first-name" placeholder="First Name">
+                  </div>
+                  <div class="input-group">
+                    <label>Last Name *</label>
+                    <input type="text" id="hire-last-name" placeholder="Last Name">
+                  </div>
+                </div>
+
+                <div class="hire-row">
+                  <div class="input-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="hire-dob">
+                  </div>
+                </div>
+
+                <div class="hire-row">
+                  <div class="input-group">
+                    <label>Start Date *</label>
+                    <input type="date" id="hire-start-date">
+                  </div>
+                </div>
+
+                <div class="hire-row">
+                  <div class="input-group">
+                    <label>Legal Employer *</label>
+                    <select id="hire-legal-employer" class="person-input" style="letter-spacing: normal;">
+                      <option value="">Select Legal Employer...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="hire-row">
+                  <div class="input-group">
+                    <label>Business Unit *</label>
+                    <select id="hire-business-unit" class="person-input" style="letter-spacing: normal;">
+                      <option value="">Select Business Unit...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="hire-row two-col">
+                  <div class="input-group">
+                    <label>Job Code</label>
+                    <input type="text" id="hire-job-code" placeholder="e.g. JOB038">
+                  </div>
+                  <div class="input-group">
+                    <label>Location Code</label>
+                    <input type="text" id="hire-location-code" placeholder="e.g. USLoc001">
+                  </div>
+                </div>
+
+                <button class="search-btn" onclick="proceedHireConfirm()" style="margin-top: 16px;">
+                  Proceed to Confirm
+                </button>
+
+                <button onclick="goHome()" style="width:100%; padding:12px; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#64748b; cursor:pointer; margin-top:8px; font-size:14px;">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </section>
 
         <!-- CONFIRMATION SCREEN -->
         <section id="screen-confirmation" class="screen">

@@ -1007,3 +1007,40 @@ body::after {
   background: rgba(0,0,0,0.05);
   border-color: rgba(0,0,0,0.1);
 }
+
+/* Hire Form Styles */
+.hire-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.hire-row {
+  width: 100%;
+}
+
+.hire-row.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .hire-row.two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hire-form select.person-input {
+  text-align-last: center;
+  font-size: 15px;
+  padding: 12px;
+}
+
+.hire-form input[type="date"] {
+  text-align: center;
+  font-size: 15px;
+}

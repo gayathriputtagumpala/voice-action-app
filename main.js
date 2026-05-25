@@ -1,4 +1,6 @@
-const API_BASE = 'https://voice-action-server.onrender.com/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? '/api'
+  : 'https://voice-action-server.onrender.com/api';
 
 // Multi-company support configuration
 const COMPANY_ORACLE_URLS = {
@@ -1397,6 +1399,9 @@ function resetApp() {
   document.getElementById('grade-selection-box').style.display = 'none';
   document.getElementById('emp-dept-row').style.display = 'none';
   
+  const hireBox = document.getElementById('hire-employee-box');
+  if (hireBox) hireBox.style.display = 'none';
+  
   document.querySelector('.tab-btn[data-target="screen-confirmation"]').setAttribute('disabled', 'true');
   document.querySelector('.tab-btn[data-target="screen-result"]').setAttribute('disabled', 'true');
  
@@ -1921,6 +1926,8 @@ document.getElementById('btn-edit').onclick = () => {
     document.getElementById('location-selection-box').style.display = 'block';
   } else if (appState.currentAction === 'change_job') {
     document.getElementById('job-selection-box').style.display = 'block';
+  } else if (appState.currentAction === 'hire_employee') {
+    document.getElementById('hire-employee-box').style.display = 'block';
   } else {
     document.getElementById('manager-selection-box').style.display = 'block';
   }
@@ -2242,10 +2249,10 @@ async function sendManagerToSarvam(audioBlob) {
                 appState.manager_display_name = match.DisplayName;
                 document.getElementById('manager-select').value = match.AssignmentId;
                 managerStatusBar.textContent = `Matched: ${match.DisplayName}`;
-                managerStatusBar.style.color = '#10b981';
+                managerStatusBar.style.color = '#10b926ff';
             } else {
                 managerStatusBar.textContent = "No matching manager found. Please try again or select from list.";
-                managerStatusBar.style.color = '#ef4444';
+                managerStatusBar.style.color = '#ef4494ff';
             }
         }
     } catch (err) {
@@ -2258,3 +2265,287 @@ window.setLocInputMethod = setLocInputMethod;
 window.setDeptInputMethod = setDeptInputMethod;
 window.setJobInputMethod = setJobInputMethod;
 window.setManagerInputMethod = setManagerInputMethod;
+
+// Start Hire Employee Flow
+window.startHireEmployee = function() {
+  appState.currentAction = 'hire_employee';
+  showAllTabs();
+  switchToTab('voice-input');
+
+  // Hide all other wizard sections
+  hideAllSteps();
+
+  // Show hire form
+  const hireBox = document.getElementById('hire-employee-box');
+  if (hireBox) hireBox.style.display = 'block';
+
+  // Set today as default start date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('hire-start-date').value = today;
+
+  // Clear previous fields
+  document.getElementById('hire-person-number').value = '';
+  document.getElementById('hire-first-name').value = '';
+  document.getElementById('hire-last-name').value = '';
+  document.getElementById('hire-dob').value = '';
+  document.getElementById('hire-job-code').value = '';
+  document.getElementById('hire-location-code').value = '';
+
+  // Fetch legal employers and business units
+  fetchLegalEmployers();
+  fetchBusinessUnits();
+
+  // Update step dots / UI if needed
+  updateStepDots(1);
+}
+
+// Utility to hide all step boxes under screen-home
+function hideAllSteps() {
+  const stepBoxes = [
+    'typeSection', 'voiceSection', 'transcript-box', 'voice-confirm-box',
+    'employee-details-box', 'step2-actions', 'manager-details-box',
+    'dept-selection-box', 'location-selection-box', 'job-selection-box',
+    'manager-selection-box', 'position-selection-box', 'grade-selection-box',
+    'hire-employee-box'
+  ];
+  stepBoxes.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
+  const mainTitle = document.getElementById('main-title');
+  if (mainTitle) mainTitle.textContent = 'Hire New Employee';
+  const subTitle = document.getElementById('sub-title');
+  if (subTitle) subTitle.style.display = 'none';
+  const indicator = document.getElementById('input-toggle-container');
+  if (indicator) indicator.style.display = 'none';
+  const stepIndicator = document.getElementById('step-indicator');
+  if (stepIndicator) stepIndicator.style.display = 'none';
+}
+
+// Helper wrapper for tab switching
+function switchToTab(tabName) {
+  if (tabName === 'voice-input') {
+    switchTab('screen-home');
+  } else if (tabName === 'confirm') {
+    switchTab('screen-confirmation');
+  } else if (tabName === 'result') {
+    switchTab('screen-result');
+  } else {
+    switchTab(tabName);
+  }
+}
+
+// Helper wrapper for adding to audit log
+function addToAuditLog(entry) {
+  let logs = JSON.parse(localStorage.getItem('voiceAppAudit')) || [];
+  const logEntry = {
+    time: new Date().toLocaleTimeString(),
+    person_no: entry.personNumber || 'N/A',
+    manager: entry.details || 'N/A',
+    status: entry.status || 'Success',
+    language: 'N/A'
+  };
+  logs.unshift(logEntry);
+  localStorage.setItem('voiceAppAudit', JSON.stringify(logs));
+}
+
+// Navigate Home Cancel Button
+window.goHome = function() {
+  showOnlyHomeTab();
+  resetApp();
+}
+
+async function fetchLegalEmployers() {
+  try {
+    const select = document.getElementById('hire-legal-employer');
+    select.innerHTML = '<option value="">Loading legal employers...</option>';
+    
+    const res = await fetch(`${API_BASE}/oracle/legalemployers`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-oracle-auth': appState.oracleAuth,
+        'x-oracle-url': appState.oracleUrl
+      }
+    });
+    
+    const data = await res.json();
+    select.innerHTML = '<option value="">Select Legal Employer...</option>';
+    
+    if (data.employers && data.employers.length > 0) {
+      data.employers.forEach(emp => {
+        const opt = document.createElement('option');
+        opt.value = emp.Name;
+        opt.textContent = emp.Name;
+        select.appendChild(opt);
+      });
+    } else {
+      select.innerHTML = '<option value="">No legal employers found</option>';
+    }
+  } catch (err) {
+    console.error('Error fetching legal employers:', err);
+    document.getElementById('hire-legal-employer').innerHTML = 
+      '<option value="">Error loading legal employers</option>';
+  }
+}
+
+async function fetchBusinessUnits() {
+  try {
+    const select = document.getElementById('hire-business-unit');
+    select.innerHTML = '<option value="">Loading business units...</option>';
+    
+    const res = await fetch(`${API_BASE}/oracle/businessunits`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-oracle-auth': appState.oracleAuth,
+        'x-oracle-url': appState.oracleUrl
+      }
+    });
+    
+    const data = await res.json();
+    select.innerHTML = '<option value="">Select Business Unit...</option>';
+    
+    if (data.units && data.units.length > 0) {
+      data.units.forEach(unit => {
+        const opt = document.createElement('option');
+        opt.value = unit.BusinessUnitName;
+        opt.textContent = unit.BusinessUnitName;
+        select.appendChild(opt);
+      });
+    } else {
+      select.innerHTML = '<option value="">No business units found</option>';
+    }
+  } catch (err) {
+    console.error('Error fetching business units:', err);
+    document.getElementById('hire-business-unit').innerHTML = 
+      '<option value="">Error loading business units</option>';
+  }
+}
+
+window.proceedHireConfirm = function() {
+  const PersonNumber = document.getElementById('hire-person-number').value.trim();
+  const FirstName = document.getElementById('hire-first-name').value.trim();
+  const LastName = document.getElementById('hire-last-name').value.trim();
+  const DateOfBirth = document.getElementById('hire-dob').value;
+  const StartDate = document.getElementById('hire-start-date').value;
+  const LegalEmployerName = document.getElementById('hire-legal-employer').value;
+  const BusinessUnitName = document.getElementById('hire-business-unit').value;
+  const JobCode = document.getElementById('hire-job-code').value.trim();
+  const LocationCode = document.getElementById('hire-location-code').value.trim();
+
+  if (!PersonNumber || !FirstName || !LastName || !StartDate || !LegalEmployerName || !BusinessUnitName) {
+    showToast('Please fill in all required fields marked with *');
+    return;
+  }
+
+  appState.hireData = {
+    PersonNumber,
+    FirstName,
+    LastName,
+    DateOfBirth,
+    StartDate,
+    LegalEmployerName,
+    BusinessUnitName,
+    JobCode,
+    LocationCode
+  };
+
+  showHireConfirmation();
+}
+
+function showHireConfirmation() {
+  document.querySelector('.tab-btn[data-target="screen-confirmation"]').removeAttribute('disabled');
+  switchToTab('confirm');
+
+  // Update confirmation screen Action
+  const actionLabel = document.querySelector('.confirm-card .glass-card-row .value');
+  if (actionLabel) {
+    actionLabel.textContent = 'Hire Employee';
+  }
+
+  // Update confirmation screen Employee
+  const confEmployee = document.getElementById('conf-employee');
+  if (confEmployee) {
+    confEmployee.textContent = `${appState.hireData.FirstName} ${appState.hireData.LastName} (New Hire)`;
+  }
+  
+  // Custom display for hire fields
+  const typeRow = document.getElementById('conf-type-row');
+  if (typeRow) typeRow.style.display = 'none';
+
+  const targetLabel = document.getElementById('conf-target-label');
+  const targetValue = document.getElementById('conf-target-value');
+  
+  if (targetLabel && targetValue) {
+    targetLabel.textContent = 'Business Unit';
+    targetValue.innerHTML = `
+      <strong>${appState.hireData.BusinessUnitName}</strong><br>
+      <span style="font-size:12px; color:#64748b;">
+        Employer: ${appState.hireData.LegalEmployerName}
+      </span>
+    `;
+  }
+
+  const dateLabel = document.getElementById('conf-date');
+  if (dateLabel) {
+    dateLabel.textContent = appState.hireData.StartDate;
+  }
+
+  // Override the click handler for confirmation button
+  const confirmBtn = document.getElementById('btn-confirm');
+  confirmBtn.onclick = confirmHireEmployee;
+}
+
+async function confirmHireEmployee() {
+  const btn = document.getElementById('btn-confirm');
+  btn.disabled = true;
+  btn.textContent = 'Hiring Employee...';
+
+  try {
+    const res = await fetch(`${API_BASE}/oracle/hire`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-oracle-auth': appState.oracleAuth,
+        'x-oracle-url': appState.oracleUrl
+      },
+      body: JSON.stringify(appState.hireData)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to hire employee.');
+    }
+
+    // Add to audit log
+    addToAuditLog({
+      action: 'Hire Employee',
+      personNumber: appState.hireData.PersonNumber,
+      details: `${appState.hireData.FirstName} ${appState.hireData.LastName}`,
+      status: 'Success'
+    });
+
+    showResult(true,
+      `🎉 ${appState.hireData.FirstName} ${appState.hireData.LastName} ` +
+      `hired successfully!\n` +
+      `Person Number: ${data.PersonNumber || appState.hireData.PersonNumber}`
+    );
+
+  } catch (err) {
+    console.error('Hire error:', err);
+    addToAuditLog({
+      action: 'Hire Employee',
+      personNumber: appState.hireData.PersonNumber,
+      details: `${appState.hireData.FirstName} ${appState.hireData.LastName}`,
+      status: 'Failed'
+    });
+    showResult(false, err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✅ Confirm';
+    
+    // Restore default click handler for standard workflows
+    btn.onclick = confirmAction;
+  }
+}
