@@ -3066,3 +3066,72 @@ window.saveWhatsAppSettings = async function() {
     alert('❌ Connection failed: ' + err.message);
   }
 };
+
+// ==========================================
+// EMPLOYEE DETAILS CONTROLLER
+// ==========================================
+window.startViewDetails = function() {
+  showAllTabs();
+  resetDetailLookup();
+  switchTab('screen-details');
+};
+
+window.resetDetailLookup = function() {
+  document.getElementById('detailPersonInput').value = '';
+  document.getElementById('detailsDisplayCard').style.display = 'none';
+  document.getElementById('detailsLoading').style.display = 'none';
+  document.getElementById('detailsError').style.display = 'none';
+};
+
+window.lookupEmployeeDetails = async function() {
+  const inputEl = document.getElementById('detailPersonInput');
+  const personNumber = inputEl.value.trim();
+  
+  if (!personNumber) {
+    alert('Please enter a valid person number.');
+    return;
+  }
+  
+  const displayCard = document.getElementById('detailsDisplayCard');
+  const loadingState = document.getElementById('detailsLoading');
+  const errorState = document.getElementById('detailsError');
+  const errorMsg = document.getElementById('det-error-msg');
+  
+  displayCard.style.display = 'none';
+  errorState.style.display = 'none';
+  loadingState.style.display = 'block';
+  
+  try {
+    const res = await fetch(`${API_BASE}/oracle/worker?person_number=${personNumber}`, {
+      headers: {
+        'x-oracle-auth': appState.oracleAuth,
+        'x-oracle-url': appState.oracleUrl
+      }
+    });
+    
+    loadingState.style.display = 'none';
+    
+    if (res.ok) {
+      const data = await res.json();
+      
+      document.getElementById('det-name').textContent = data.DisplayName || 'Unknown';
+      document.getElementById('det-number-sub').textContent = `Person Number: ${data.PersonNumber}`;
+      document.getElementById('det-dept').textContent = data.DepartmentName || 'Not Assigned';
+      document.getElementById('det-job').textContent = data.JobName || 'Not Assigned';
+      document.getElementById('det-loc').textContent = data.LocationName || 'Not Assigned';
+      document.getElementById('det-pos').textContent = data.PositionName || 'Not Assigned';
+      document.getElementById('det-grade').textContent = data.GradeName || 'Not Assigned';
+      document.getElementById('det-manager').textContent = data.currentManagerName || 'None';
+      
+      displayCard.style.display = 'block';
+    } else {
+      const err = await res.json();
+      errorMsg.textContent = `❌ ${err.error || 'Employee profile not found'}`;
+      errorState.style.display = 'block';
+    }
+  } catch (err) {
+    loadingState.style.display = 'none';
+    errorMsg.textContent = `❌ Connection error: ${err.message}`;
+    errorState.style.display = 'block';
+  }
+};
