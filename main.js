@@ -143,17 +143,158 @@ document.addEventListener('DOMContentLoaded', () => {
   if (themeToggle) {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    themeToggle.textContent = savedTheme === 'light' ? 'â˜€ï¸' : '\uD83C\uDF19';
+    themeToggle.textContent = savedTheme === 'light' ? '☀️' : '🌙';
 
     themeToggle.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
-      themeToggle.textContent = next === 'light' ? 'â˜€ï¸' : '\uD83C\uDF19';
+      themeToggle.textContent = next === 'light' ? '☀️' : '🌙';
     });
   }
+
+  // Make all dropdown select elements searchable
+  const selectIds = [
+    'dept-select',
+    'location-select',
+    'job-select',
+    'manager-select',
+    'position-select',
+    'grade-select',
+    'hire-legal-employer',
+    'hire-business-unit'
+  ];
+  selectIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) makeSelectSearchable(el);
+  });
 });
+
+// Helper to make any select element searchable
+function makeSelectSearchable(selectEl) {
+  if (!selectEl) return;
+  
+  if (selectEl.dataset.searchableInitialized) return;
+  selectEl.dataset.searchableInitialized = 'true';
+  
+  // Hide native select
+  selectEl.style.display = 'none';
+  
+  // Wrapper
+  const wrapper = document.createElement('div');
+  wrapper.className = 'custom-select-wrapper';
+  
+  // Trigger group
+  const trigger = document.createElement('div');
+  trigger.className = 'custom-select-trigger';
+  
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.className = 'custom-select-search';
+  searchInput.placeholder = selectEl.options[0]?.text || 'Select...';
+  
+  const arrow = document.createElement('span');
+  arrow.className = 'custom-select-arrow';
+  arrow.innerHTML = '&#9662;';
+  
+  trigger.appendChild(searchInput);
+  trigger.appendChild(arrow);
+  wrapper.appendChild(trigger);
+  
+  // Options container
+  const optionsContainer = document.createElement('div');
+  optionsContainer.className = 'custom-select-options hidden';
+  wrapper.appendChild(optionsContainer);
+  
+  // Insert before native element
+  selectEl.parentNode.insertBefore(wrapper, selectEl);
+  
+  function rebuildOptions() {
+    optionsContainer.innerHTML = '';
+    const query = searchInput.value.toLowerCase().trim();
+    
+    Array.from(selectEl.options).forEach((opt, idx) => {
+      // Don't show first item if it is empty placeholder
+      if (idx === 0 && !opt.value) return;
+      
+      const text = opt.text;
+      const val = opt.value;
+      
+      if (query && !text.toLowerCase().includes(query)) return;
+      
+      const optionDiv = document.createElement('div');
+      optionDiv.className = 'custom-option';
+      optionDiv.textContent = text;
+      optionDiv.dataset.value = val;
+      
+      if (selectEl.value === val) {
+        optionDiv.classList.add('selected');
+        if (document.activeElement !== searchInput) {
+          searchInput.placeholder = text;
+        }
+      }
+      
+      optionDiv.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // prevent losing focus
+        selectEl.value = val;
+        searchInput.value = '';
+        searchInput.placeholder = text;
+        optionsContainer.classList.add('hidden');
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        rebuildOptions();
+      });
+      
+      optionsContainer.appendChild(optionDiv);
+    });
+    
+    if (optionsContainer.children.length === 0) {
+      const noResultsDiv = document.createElement('div');
+      noResultsDiv.className = 'custom-option no-results';
+      noResultsDiv.textContent = 'No matches found';
+      optionsContainer.appendChild(noResultsDiv);
+    }
+  }
+  
+  rebuildOptions();
+  
+  // Mutation observer to capture dynamic options changes
+  const observer = new MutationObserver(() => {
+    rebuildOptions();
+    const activeOpt = selectEl.options[selectEl.selectedIndex];
+    if (activeOpt) {
+      searchInput.placeholder = activeOpt.text;
+    }
+  });
+  observer.observe(selectEl, { childList: true, subtree: true });
+  
+  // Input search typing
+  searchInput.addEventListener('input', () => {
+    optionsContainer.classList.remove('hidden');
+    rebuildOptions();
+  });
+  
+  // Focus show options
+  searchInput.addEventListener('focus', () => {
+    document.querySelectorAll('.custom-select-options').forEach(el => {
+      if (el !== optionsContainer) el.classList.add('hidden');
+    });
+    optionsContainer.classList.remove('hidden');
+    rebuildOptions();
+  });
+  
+  // Click outside to close
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) {
+      optionsContainer.classList.add('hidden');
+      searchInput.value = '';
+      const selectedOpt = selectEl.options[selectEl.selectedIndex];
+      if (selectedOpt) {
+        searchInput.placeholder = selectedOpt.text;
+      }
+    }
+  });
+}
 
 tabBtns.forEach(btn => {
   btn.addEventListener('click', () => {
