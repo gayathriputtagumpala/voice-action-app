@@ -3013,3 +3013,56 @@ window.applyParsedHireData = function() {
   // validation and proceed
   proceedHireConfirm();
 }
+
+// ==========================================
+// WHATSAPP SETTINGS MODAL CONTROLLER
+// ==========================================
+window.openWhatsAppSettings = async function() {
+  const modal = document.getElementById('whatsapp-settings-modal');
+  if (!modal) return;
+  
+  modal.style.display = 'flex';
+  
+  try {
+    const res = await fetch(`${API_BASE}/whatsapp/config`);
+    if (res.ok) {
+      const config = await res.json();
+      document.getElementById('ws-phone-id').value = config.phoneId || '';
+      document.getElementById('ws-verify-token').value = config.verifyToken || '';
+      document.getElementById('ws-token').value = config.token || '';
+    }
+  } catch (err) {
+    console.error('Failed to load WhatsApp config:', err);
+  }
+};
+
+window.closeWhatsAppSettings = function() {
+  const modal = document.getElementById('whatsapp-settings-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.saveWhatsAppSettings = async function() {
+  const phoneId = document.getElementById('ws-phone-id').value.trim();
+  const verifyToken = document.getElementById('ws-verify-token').value.trim();
+  const token = document.getElementById('ws-token').value.trim();
+  
+  try {
+    const res = await fetch(`${API_BASE}/whatsapp/config`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ phoneId, verifyToken, token })
+    });
+    
+    if (res.ok) {
+      alert('✅ WhatsApp configuration saved and updated successfully!');
+      closeWhatsAppSettings();
+    } else {
+      const errData = await res.json();
+      alert('❌ Failed to save WhatsApp configuration: ' + (errData.error || 'Server error'));
+    }
+  } catch (err) {
+    alert('❌ Connection failed: ' + err.message);
+  }
+};
