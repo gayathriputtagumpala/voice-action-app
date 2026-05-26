@@ -3116,7 +3116,13 @@ window.lookupEmployeeDetails = async function() {
       
       document.getElementById('det-name').textContent = data.DisplayName || 'Unknown';
       document.getElementById('det-number-sub').textContent = `Person Number: ${data.PersonNumber}`;
+      document.getElementById('det-asg-no').textContent = data.AssignmentNumber || 'Not Assigned';
+      document.getElementById('det-worker-type').textContent = data.UserPersonType || 'Employee';
+      document.getElementById('det-status').textContent = data.AssignmentStatusType || 'ACTIVE';
+      document.getElementById('det-start-date').textContent = data.StartDate || 'Not Assigned';
       document.getElementById('det-dept').textContent = data.DepartmentName || 'Not Assigned';
+      document.getElementById('det-legal-employer').textContent = data.LegalEmployerName || 'Not Assigned';
+      document.getElementById('det-bu').textContent = data.BusinessUnitName || 'Not Assigned';
       document.getElementById('det-job').textContent = data.JobName || 'Not Assigned';
       document.getElementById('det-loc').textContent = data.LocationName || 'Not Assigned';
       document.getElementById('det-pos').textContent = data.PositionName || 'Not Assigned';
