@@ -143,14 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (themeToggle) {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    themeToggle.textContent = savedTheme === 'light' ? 'â˜€ï¸' : 'ðŸŒ™';
+    themeToggle.textContent = savedTheme === 'light' ? 'â˜€ï¸' : '\uD83C\uDF19';
 
     themeToggle.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
-      themeToggle.textContent = next === 'light' ? 'â˜€ï¸' : 'ðŸŒ™';
+      themeToggle.textContent = next === 'light' ? 'â˜€ï¸' : '\uD83C\uDF19';
     });
   }
 });
@@ -190,11 +190,10 @@ micBtn.addEventListener('click', toggleRecording);
 
 function toggleRecording() {
   if (isRecording) {
-    console.log(`[Step ${appState.workflowStep}] Stop recording clicked...`);
     isRecording = false;
     micBtn.classList.remove('recording');
-    statusBar.textContent = "â³ Processing your voice...";
-    statusBar.style.color = 'var(--primary)';
+    statusBar.textContent = "â ³ Processing your voice...";
+    statusBar.style.color = 'var(--accent-color)';
     if(mediaRecorder) mediaRecorder.stop();
   } else {
     console.log(`[Step ${appState.workflowStep}] Start recording clicked...`);
@@ -202,7 +201,7 @@ function toggleRecording() {
     audioChunks = [];
     micBtn.classList.add('recording');
     statusBar.textContent = "ðŸ”´ Listening... click mic to stop";
-    statusBar.style.color = 'var(--danger)';
+    statusBar.style.color = 'var(--danger-color)';
     transcriptBox.style.display = 'block';
     transcriptText.textContent = "...";
 
@@ -225,7 +224,7 @@ function toggleRecording() {
       }).catch(err => {
         console.error("Microphone access failed:", err);
         statusBar.textContent = "Error: Could not access microphone.";
-        statusBar.style.color = 'var(--danger)';
+        statusBar.style.color = 'var(--danger-color)';r.style.color = 'var(--danger)';
         isRecording = false;
         micBtn.classList.remove('recording');
       });
@@ -735,7 +734,7 @@ function moveToStep3() {
         
         statusBar.style.display = 'block';
         statusBar.textContent = "Please speak the Manager's Person Number";
-        statusBar.style.color = 'var(--text-muted)';
+        statusBar.style.color = 'var(--text-secondary)';
     }
     
     transcriptBox.style.display = 'none';
@@ -777,7 +776,7 @@ async function fetchManagerDetails() {
         managerDetailsBox.style.display = 'block';
         
         statusBar.textContent = "Done processing.";
-        statusBar.style.color = 'var(--text-muted)';
+        statusBar.style.color = 'var(--text-secondary)';
         
     } catch (error) {
         console.error("Oracle Fetch Error:", error);
