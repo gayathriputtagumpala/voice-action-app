@@ -1,3 +1,17 @@
+if (window.trustedTypes && window.trustedTypes.createPolicy) {
+  if (!window.trustedTypes.defaultPolicy) {
+    try {
+      window.trustedTypes.createPolicy('default', {
+        createHTML: (string) => string,
+        createScript: (string) => string,
+        createScriptURL: (string) => string
+      });
+    } catch (e) {
+      console.warn("TrustedTypes default policy creation failed:", e);
+    }
+  }
+}
+
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? '/api'
   : 'https://voice-action-server.onrender.com/api';
