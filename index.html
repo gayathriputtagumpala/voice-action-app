@@ -166,6 +166,13 @@
               <div class="card-title">Change Grade</div>
               <div class="card-description">Update employee work grade</div>
             </div>
+            
+            <div class="action-card active" onclick="startChangeBusinessUnit()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon icon-purple">🌍</div>
+              <div class="card-title">Change Business Unit</div>
+              <div class="card-description">Update employee business unit</div>
+            </div>
           </div>
         </section>
 
@@ -576,6 +583,40 @@
               </div>
 
               <button id="btn-proceed-grade-confirm" class="btn btn-primary mt-4">Proceed to Confirm</button>
+            </div>
+            
+            <div id="bu-selection-box" class="employee-card" style="display:none;">
+               <h2 class="step-title" style="font-size:18px;">Select New Business Unit</h2>
+               <div class="input-toggle" id="bu-input-toggle">
+                 <button class="toggle-btn" onclick="setBUInputMethod('type')" id="buTypeBtn">⌨️ Type</button>
+                 <button class="toggle-btn active" onclick="setBUInputMethod('voice')" id="buVoiceBtn">🎤 Voice</button>
+               </div>
+               
+               <div id="bu-type-section" style="display:none; width:100%;">
+                  <select id="bu-select" class="person-input" style="letter-spacing: normal; font-size: 16px; margin-bottom: 20px;">
+                    <option value="">Select a Business Unit...</option>
+                  </select>
+                </div>
+
+               <div id="bu-voice-section" style="width:100%;">
+                 <div class="mic-container" style="margin: 20px 0;">
+                   <button id="bu-mic-btn" class="mic-btn" style="width: 72px; height: 72px;">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28">
+                       <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                       <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                       <line x1="12" y1="19" x2="12" y2="23"></line>
+                       <line x1="8" y1="23" x2="16" y2="23"></line>
+                      </svg>
+                   </button>
+                 </div>
+                 <p class="status-bar" id="bu-status-bar">Press mic and speak Business Unit name</p>
+               </div>
+
+               <div class="glass-card" id="bu-transcript-box" style="display:none; margin-top:10px;">
+                 <p id="bu-transcript-text" class="transcript-text">...</p>
+               </div>
+
+               <button id="btn-proceed-bu-confirm" class="btn btn-primary mt-4">Proceed to Confirm</button>
             </div>
 
             <!-- Hire Employee Form Box -->

@@ -486,6 +486,7 @@ async function fetchEmployeeDetails() {
         appState.current_job_name = data.JobName;
         appState.current_position_name = data.PositionName;
         appState.current_grade_name = data.GradeName;
+        appState.current_bu_name = data.BusinessUnitName;
 
         console.log("Employee found:", appState.worker_display_name);
         
@@ -570,6 +571,20 @@ async function fetchEmployeeDetails() {
 
             // Fetch available grades for Step 3
             fetchGrades();
+        } else if (appState.currentAction === 'change_business_unit') {
+            if (empDeptRow) empDeptRow.style.display = 'flex';
+            if (empCurrentDept) {
+                empCurrentDept.textContent = appState.current_bu_name || 'Not Assigned';
+                empDeptRow.querySelector('.label').innerText = 'Current Business Unit';
+            }
+            
+            // Hide manager rows
+            if (empManagerRow) empManagerRow.style.display = 'none';
+            if (empStatusRow) empStatusRow.style.display = 'none';
+            if (empManagerTypeRow) empManagerTypeRow.style.display = 'none';
+
+            // Fetch available Business Units for Step 3
+            fetchBusinessUnits();
         } else {
             if (empDeptRow) empDeptRow.style.display = 'none';
             
@@ -877,6 +892,14 @@ function moveToStep3() {
         
         document.getElementById('grade-selection-box').style.display = 'block';
         setGradeInputMethod('voice');
+    } else if (appState.currentAction === 'change_business_unit') {
+        mainTitle.textContent = "Select New Business Unit";
+        document.getElementById('input-toggle-container').style.display = 'none';
+        document.getElementById('typeSection').style.display = 'none';
+        document.getElementById('voiceSection').style.display = 'none';
+        
+        document.getElementById('bu-selection-box').style.display = 'block';
+        setBUInputMethod('voice');
     } else {
         mainTitle.textContent = "Enter Manager Person Number";
         document.getElementById('input-toggle-container').style.display = 'block';
@@ -978,6 +1001,11 @@ function moveToStep4() {
         actionLabel.textContent = "Change Grade";
         targetLabel.textContent = "New Grade";
         targetValue.textContent = appState.new_grade;
+        if (typeRow) typeRow.style.display = 'none';
+    } else if (appState.currentAction === 'change_business_unit') {
+        actionLabel.textContent = "Change Business Unit";
+        targetLabel.textContent = "New Business Unit";
+        targetValue.textContent = appState.new_bu;
         if (typeRow) typeRow.style.display = 'none';
     } else {
         actionLabel.textContent = "Assign Manager";
@@ -1229,8 +1257,68 @@ function confirmGradeSelection() {
 
 document.getElementById('btn-proceed-grade-confirm')?.addEventListener('click', confirmGradeSelection);
 
+window.startChangeBusinessUnit = function() {
+    showAllTabs();
+    resetApp();
+    appState.currentAction = 'change_business_unit';
+    switchTab('screen-home');
+}
+
+async function fetchBusinessUnits() {
+    try {
+        console.log("Fetching Business Units...");
+        const res = await fetch(`${API_BASE}/oracle/businessunits`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
+        const data = await res.json();
+        appState.available_bus = data.businessunits || [];
+        
+        const select = document.getElementById('bu-select');
+        select.innerHTML = '<option value="">Select a Business Unit...</option>';
+        appState.available_bus.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.BusinessUnitId;
+            opt.innerText = b.BusinessUnitName;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to fetch business units', err);
+    }
+}
+
+function setBUInputMethod(method) {
+    const voiceBtn = document.getElementById('buVoiceBtn');
+    const typeBtn = document.getElementById('buTypeBtn');
+    const voiceSec = document.getElementById('bu-voice-section');
+    const typeSec = document.getElementById('bu-type-section');
+    
+    if (method === 'voice') {
+        voiceBtn.classList.add('active');
+        typeBtn.classList.remove('active');
+        voiceSec.style.display = 'block';
+        typeSec.style.display = 'none';
+    } else {
+        typeBtn.classList.add('active');
+        voiceBtn.classList.remove('active');
+        typeSec.style.display = 'block';
+        voiceSec.style.display = 'none';
+    }
+}
+window.setBUInputMethod = setBUInputMethod;
+
+function confirmBUSelection() {
+    const select = document.getElementById('bu-select');
+    if (!select.value) {
+        showToast("Please select a Business Unit");
+        return;
+    }
+    appState.selected_bu_id = select.value;
+    appState.new_bu = select.options[select.selectedIndex].text;
+    moveToStep4();
+}
+
+document.getElementById('btn-proceed-bu-confirm')?.addEventListener('click', confirmBUSelection);
+
 async function confirmAction() {
-  const action = appState.currentAction === 'change_department' ? 'Change Department' : (appState.currentAction === 'change_location' ? 'Change Location' : (appState.currentAction === 'change_job' ? 'Change Job' : (appState.currentAction === 'change_position' ? 'Change Position' : (appState.currentAction === 'change_grade' ? 'Change Grade' : 'Assign Manager'))));
+  const action = appState.currentAction === 'change_department' ? 'Change Department' : (appState.currentAction === 'change_location' ? 'Change Location' : (appState.currentAction === 'change_job' ? 'Change Job' : (appState.currentAction === 'change_position' ? 'Change Position' : (appState.currentAction === 'change_grade' ? 'Change Grade' : (appState.currentAction === 'change_business_unit' ? 'Change Business Unit' : 'Assign Manager')))));
   console.log(`${action} clicked...`);
   const btn = document.getElementById('btn-confirm');
   btn.disabled = true;
@@ -1360,6 +1448,29 @@ async function confirmAction() {
             console.log("Grade Success!");
             saveAuditLog("Success");
             showResult(true, `Grade changed to ${appState.new_grade} successfully for Person ${appState.person_number}.`);
+        } else if (appState.currentAction === 'change_business_unit') {
+            console.log("Calling PATCH /api/oracle/businessunit...");
+            const res = await fetch(`${API_BASE}/oracle/businessunit`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
+              body: JSON.stringify({
+                encodedPersonId: appState.encodedPersonId,
+                WorkRelationshipId: appState.WorkRelationshipId,
+                encodedAssignmentId: appState.encodedAssignmentId,
+                BusinessUnitId: appState.selected_bu_id,
+                BusinessUnitName: appState.new_bu,
+                EffectiveDate: appState.effective_date
+              })
+            });
+            
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Failed to change Business Unit.");
+            }
+            
+            console.log("Business Unit Success!");
+            saveAuditLog("Success");
+            showResult(true, `Business Unit changed to ${appState.new_bu} successfully for Person ${appState.person_number}.`);
         } else {
         console.log("Calling POST /api/oracle/assign...");
         const res = await fetch(`${API_BASE}/oracle/assign`, {
@@ -1510,7 +1621,11 @@ function resetApp() {
     available_grades: [],
     selected_grade_id: null,
     new_grade: null,
-    current_grade_name: null
+    current_grade_name: null,
+    available_bus: [],
+    selected_bu_id: null,
+    new_bu: null,
+    current_bu_name: null
   };
   audioChunks = [];
   
@@ -1551,6 +1666,7 @@ function resetApp() {
   document.getElementById('manager-selection-box').style.display = 'none';
   document.getElementById('position-selection-box').style.display = 'none';
   document.getElementById('grade-selection-box').style.display = 'none';
+  document.getElementById('bu-selection-box').style.display = 'none';
   document.getElementById('emp-dept-row').style.display = 'none';
   
   const hireBox = document.getElementById('hire-employee-box');
@@ -2068,6 +2184,85 @@ async function sendPosToSarvam(audioBlob) {
     }
 }
 
+// Business Unit Logic (Voice)
+const buMicBtn = document.getElementById('bu-mic-btn');
+const buStatusBar = document.getElementById('bu-status-bar');
+const buTranscriptBox = document.getElementById('bu-transcript-box');
+const buTranscriptText = document.getElementById('bu-transcript-text');
+
+let isBURecording = false;
+
+if (buMicBtn) {
+    buMicBtn.addEventListener('click', toggleBURecording);
+}
+
+function toggleBURecording() {
+    if (isBURecording) {
+        isBURecording = false;
+        buMicBtn.classList.remove('recording');
+        buStatusBar.textContent = "⌛ Processing voice...";
+        if(mediaRecorder) mediaRecorder.stop();
+    } else {
+        isBURecording = true;
+        audioChunks = [];
+        buMicBtn.classList.add('recording');
+        buStatusBar.textContent = "🎙️ Listening for Business Unit name...";
+        buTranscriptBox.style.display = 'block';
+        buTranscriptText.textContent = "...";
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.start();
+            
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = () => {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+              sendBUToSarvam(audioBlob);
+              stream.getTracks().forEach(track => track.stop());
+            };
+          }).catch(err => {
+            console.error("Mic error:", err);
+            isBURecording = false;
+            buMicBtn.classList.remove('recording');
+        });
+    }
+}
+
+async function sendBUToSarvam(audioBlob) {
+    try {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'audio.webm');
+        formData.append('language_code', langSelect.value);
+        
+        const res = await fetch(`${API_BASE}/sarvam/stt`, { method: 'POST', body: formData });
+        const data = await res.json();
+        const transcript = data.transcript;
+        
+        buTranscriptText.textContent = transcript || "Could not understand.";
+        if (transcript) {
+            const cleanTranscript = transcript.toLowerCase().replace(/[^\w\s]/g, '').trim();
+            const match = appState.available_bus.find(b => 
+                cleanTranscript.includes(b.BusinessUnitName.toLowerCase()) ||
+                b.BusinessUnitName.toLowerCase().includes(cleanTranscript)
+            );
+            
+            if (match) {
+                appState.new_bu = match.BusinessUnitName;
+                document.getElementById('bu-select').value = match.BusinessUnitId;
+                buStatusBar.textContent = `Matched: ${match.BusinessUnitName}`;
+                buStatusBar.style.color = '#10b981';
+            } else {
+                buStatusBar.textContent = "No matching Business Unit found. Please try again or select from list.";
+                buStatusBar.style.color = '#ef4444';
+            }
+        }
+    } catch (err) {
+        console.error("STT Error:", err);
+    }
+}
+
 // Event listeners for the confirmation screen buttons
 document.getElementById('btn-confirm').onclick = confirmAction;
 
@@ -2080,6 +2275,12 @@ document.getElementById('btn-edit').onclick = () => {
     document.getElementById('location-selection-box').style.display = 'block';
   } else if (appState.currentAction === 'change_job') {
     document.getElementById('job-selection-box').style.display = 'block';
+  } else if (appState.currentAction === 'change_position') {
+    document.getElementById('position-selection-box').style.display = 'block';
+  } else if (appState.currentAction === 'change_grade') {
+    document.getElementById('grade-selection-box').style.display = 'block';
+  } else if (appState.currentAction === 'change_business_unit') {
+    document.getElementById('bu-selection-box').style.display = 'block';
   } else if (appState.currentAction === 'hire_employee') {
     document.getElementById('hire-employee-box').style.display = 'block';
   } else {
