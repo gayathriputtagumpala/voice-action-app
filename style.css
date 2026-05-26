@@ -108,7 +108,7 @@ body::after {
   align-items: center;
 }
 .company-logo {
-  height: 48px;
+  height: 66px;
   width: auto;
   object-fit: contain;
 }
