@@ -1185,3 +1185,26 @@ div[style*="z-index: 9999"] {
 [data-theme="light"] .po-number {
   color: #0f172a;
 }
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 40px auto 20px;
+  max-width: 1000px;
+  padding: 0 24px;
+}
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+.section-divider span {
+  padding: 0 16px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
