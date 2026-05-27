@@ -173,8 +173,34 @@
               <div class="card-title">Change Business Unit</div>
               <div class="card-description">Update employee business unit</div>
             </div>
-          </div>
-        </section>
+            
+            <div class="section-divider">
+              <span>Procurement</span>
+            </div>
+
+            <div class="action-grid">
+              <div class="action-card active" onclick="startPODetails()">
+                <div class="card-badge badge-available">LIVE</div>
+                <div class="card-icon-box" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📄</div>
+                <div class="card-title">PO Status</div>
+                <div class="card-description">Check purchase order details and status</div>
+              </div>
+
+              <div class="action-card active" onclick="startPOApproval()">
+                <div class="card-badge badge-available">LIVE</div>
+                <div class="card-icon-box" style="background:linear-gradient(135deg,#10b981,#059669)">✅</div>
+                <div class="card-title">Approve PO</div>
+                <div class="card-description">View and approve pending purchase orders</div>
+              </div>
+
+              <div class="action-card coming-soon">
+                <div class="card-badge badge-coming-soon">SOON</div>
+                <div class="card-icon-box" style="background:linear-gradient(135deg,#374151,#1f2937)">📦</div>
+                <div class="card-title">Create PO</div>
+                <div class="card-description">Create a new purchase order in Oracle</div>
+              </div>
+            </div>
+          </section>
 
         <!-- EMPLOYEE DETAILS LOOKUP SCREEN -->
         <section id="screen-details" class="screen">
@@ -745,6 +771,85 @@
                   Cancel
                 </button>
               </div>
+            </div>
+
+            <!-- PO Details Box -->
+            <div id="po-details-box" style="display:none;">
+              <h2 class="step-title">Purchase Order Status</h2>
+
+              <div class="input-toggle">
+                <button class="toggle-btn active" onclick="setPOInputMethod('type')" id="poTypeBtn">⌨️ Type</button>
+                <button class="toggle-btn" onclick="setPOInputMethod('voice')" id="poVoiceBtn">🎤 Voice</button>
+              </div>
+
+              <div id="po-type-section">
+                <div class="input-group">
+                  <label>PO Number</label>
+                  <input type="text" id="po-number-input" placeholder="e.g. US164932" class="person-input" style="text-transform:uppercase;">
+                </div>
+                <button class="search-btn" onclick="searchPO()" style="margin-top:12px;">🔍 Search PO</button>
+              </div>
+
+              <div id="po-voice-section" style="display:none;">
+                <div class="mic-container">
+                  <button id="poMicBtn" class="mic-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                      <line x1="12" y1="19" x2="12" y2="23"></line>
+                      <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+                <p class="status-bar" id="po-status-bar">Press mic and say the PO number</p>
+              </div>
+
+              <div id="po-result-card" style="display:none;">
+                <div class="glass-card" style="margin-top:20px;">
+                  <div class="glass-card-row">
+                    <span class="label">PO Number</span>
+                    <span class="value" id="po-display-number"></span>
+                  </div>
+                  <div class="glass-card-row">
+                    <span class="label">Status</span>
+                    <span class="value" id="po-display-status"></span>
+                  </div>
+                  <div class="glass-card-row">
+                    <span class="label">Supplier</span>
+                    <span class="value" id="po-display-supplier"></span>
+                  </div>
+                  <div class="glass-card-row">
+                    <span class="label">Total Amount</span>
+                    <span class="value" id="po-display-total"></span>
+                  </div>
+                  <div class="glass-card-row">
+                    <span class="label">Created Date</span>
+                    <span class="value" id="po-display-date"></span>
+                  </div>
+                  <div class="glass-card-row">
+                    <span class="label">Business Unit</span>
+                    <span class="value" id="po-display-bu"></span>
+                  </div>
+                </div>
+
+                <div id="po-approve-btn-container" style="display:none;">
+                  <button class="search-btn" onclick="approvePO()" style="margin-top:16px; background:linear-gradient(135deg,#10b981,#059669); box-shadow:0 8px 24px rgba(16,185,129,0.3);">✅ Approve This PO</button>
+                </div>
+
+                <button onclick="resetPOSearch()" style="width:100%; padding:12px; margin-top:8px; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#64748b; cursor:pointer; font-size:14px;">🔍 Search Another PO</button>
+              </div>
+            </div>
+
+            <!-- PO List Box -->
+            <div id="po-list-box" style="display:none;">
+              <h2 class="step-title">Pending Purchase Orders</h2>
+              <p style="color:#64748b; font-size:13px; margin-bottom:16px;">Select a PO to approve</p>
+
+              <div id="po-list-container">
+                <div style="text-align:center; padding:40px; color:#64748b;">Loading purchase orders...</div>
+              </div>
+
+              <button onclick="goHome()" style="width:100%; padding:12px; margin-top:16px; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#64748b; cursor:pointer; font-size:14px;">← Back to Home</button>
             </div>
           </section>
 

@@ -3342,3 +3342,216 @@ window.lookupEmployeeDetails = async function() {
     errorState.style.display = 'block';
   }
 };
+
+let currentPO = null;
+
+// Start PO Status flow
+window.startPODetails = function() {
+  appState.currentAction = 'po_status';
+  showAllTabs();
+  switchToTab('screen-home');
+  hideAllSteps();
+  document.getElementById('po-details-box').style.display = 'block';
+  updateStepDots(1);
+}
+
+// Start PO Approval flow
+window.startPOApproval = function() {
+  appState.currentAction = 'po_approval';
+  showAllTabs();
+  switchToTab('screen-home');
+  hideAllSteps();
+  document.getElementById('po-list-box').style.display = 'block';
+  fetchPOList();
+  updateStepDots(1);
+}
+
+// Set PO input method
+window.setPOInputMethod = function(method) {
+  if (method === 'type') {
+    document.getElementById('po-type-section').style.display = 'block';
+    document.getElementById('po-voice-section').style.display = 'none';
+    document.getElementById('poTypeBtn').classList.add('active');
+    document.getElementById('poVoiceBtn').classList.remove('active');
+  } else {
+    document.getElementById('po-type-section').style.display = 'none';
+    document.getElementById('po-voice-section').style.display = 'block';
+    document.getElementById('poVoiceBtn').classList.add('active');
+    document.getElementById('poTypeBtn').classList.remove('active');
+  }
+}
+
+// Search PO by number
+window.searchPO = async function() {
+  const poNumber = document.getElementById('po-number-input').value.trim().toUpperCase();
+
+  if (!poNumber) {
+    alert('Please enter a PO number');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/oracle/po/details?orderNumber=${poNumber}`, {
+      headers: {
+        'x-oracle-auth': appState.oracleAuth || sessionStorage.getItem('oracleAuth'),
+        'x-oracle-url': appState.oracleUrl || sessionStorage.getItem('oracleUrl')
+      }
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      currentPO = data;
+      displayPODetails(data);
+    } else {
+      alert(data.error || 'PO not found');
+    }
+
+  } catch (err) {
+    console.error('PO search error:', err);
+    alert('Error searching PO. Please try again.');
+  }
+}
+
+// Display PO details
+function displayPODetails(po) {
+  document.getElementById('po-display-number').textContent = po.OrderNumber;
+  document.getElementById('po-display-status').textContent = po.Status;
+  document.getElementById('po-display-supplier').textContent = po.Supplier || 'N/A';
+  document.getElementById('po-display-total').textContent = `${po.CurrencyCode} ${po.Total || '0'}`;
+  document.getElementById('po-display-date').textContent = po.CreationDate?.split('T')[0] || 'N/A';
+  document.getElementById('po-display-bu').textContent = po.ProcurementBU || 'N/A';
+
+  document.getElementById('po-result-card').style.display = 'block';
+
+  // Show approve button if PO is open
+  const approveContainer = document.getElementById('po-approve-btn-container');
+  if (po.canApprove) {
+    approveContainer.style.display = 'block';
+  } else {
+    approveContainer.style.display = 'none';
+  }
+}
+
+// Fetch PO list
+async function fetchPOList() {
+  try {
+    const res = await fetch(`${API_BASE}/oracle/po/list`, {
+      headers: {
+        'x-oracle-auth': appState.oracleAuth || sessionStorage.getItem('oracleAuth'),
+        'x-oracle-url': appState.oracleUrl || sessionStorage.getItem('oracleUrl')
+      }
+    });
+
+    const data = await res.json();
+    const container = document.getElementById('po-list-container');
+
+    if (!data.purchaseOrders?.length) {
+      container.innerHTML = `<div style="text-align:center; padding:40px; color:#64748b;">No open purchase orders found</div>`;
+      return;
+    }
+
+    container.innerHTML = data.purchaseOrders.map(po => `
+      <div class="po-list-item" onclick="selectPOFromList('${po.POHeaderId}', '${po.OrderNumber}')">
+        <div class="po-list-left">
+          <div class="po-number">${po.OrderNumber}</div>
+          <div class="po-supplier">${po.Supplier || 'N/A'}</div>
+        </div>
+        <div class="po-list-right">
+          <div class="po-amount">${po.CurrencyCode} ${po.Total || '0'}</div>
+          <div class="po-status-badge">${po.Status}</div>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    console.error('PO list error:', err);
+    document.getElementById('po-list-container').innerHTML = `
+      <div style="text-align:center; padding:40px; color:#ef4444;">
+        Error loading POs. Please try again.
+      </div>`;
+  }
+}
+
+// Select PO from list for approval
+window.selectPOFromList = function(poHeaderId, orderNumber) {
+  currentPO = { POHeaderId: poHeaderId, OrderNumber: orderNumber };
+  showPOApproveConfirm(orderNumber);
+}
+
+// Show PO approval confirmation
+function showPOApproveConfirm(orderNumber) {
+  switchToTab('screen-confirmation');
+  const confirmCard = document.querySelector('.confirm-card');
+  if (confirmCard) {
+    confirmCard.innerHTML = `
+      <div class="glass-card-row">
+        <span class="label">Action</span>
+        <span class="value">Approve Purchase Order</span>
+      </div>
+      <div class="glass-card-row">
+        <span class="label">PO Number</span>
+        <span class="value">${orderNumber}</span>
+      </div>
+      <div class="glass-card-row">
+        <span class="label">Comments</span>
+        <span class="value">Approved via Voice Assistant</span>
+      </div>
+    `;
+
+    document.getElementById('btn-confirm').onclick = confirmPOApproval;
+  }
+}
+
+// Confirm PO approval
+async function confirmPOApproval() {
+  const btn = document.getElementById('btn-confirm');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/oracle/po/approve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-oracle-auth': appState.oracleAuth || sessionStorage.getItem('oracleAuth'),
+        'x-oracle-url': appState.oracleUrl || sessionStorage.getItem('oracleUrl')
+      },
+      body: JSON.stringify({
+        POHeaderId: currentPO.POHeaderId,
+        OrderNumber: currentPO.OrderNumber,
+        comments: 'Approved via Voice Assistant'
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showResult(true, `✅ PO ${currentPO.OrderNumber} approved successfully!`);
+    } else if (res.status === 403) {
+      showResult(false, `You do not have permission to approve PO ${currentPO.OrderNumber}.\nPlease contact your Oracle administrator.`);
+    } else {
+      showResult(false, data.error || 'Failed to approve PO. Please try again.');
+    }
+
+  } catch (err) {
+    console.error('PO approval error:', err);
+    showResult(false, 'Connection error. Please try again.');
+  }
+}
+
+// Approve PO from details view
+window.approvePO = function() {
+  if (currentPO) {
+    showPOApproveConfirm(currentPO.OrderNumber);
+  }
+}
+
+// Reset PO search
+window.resetPOSearch = function() {
+  document.getElementById('po-number-input').value = '';
+  document.getElementById('po-result-card').style.display = 'none';
+  currentPO = null;
+}

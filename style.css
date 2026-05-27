@@ -1126,3 +1126,62 @@ div[style*="z-index: 9999"] {
   font-style: italic;
   cursor: default;
 }
+
+/* Procurement Styles */
+.po-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.po-list-item:hover {
+  background: rgba(245,158,11,0.1);
+  border-color: rgba(245,158,11,0.4);
+  transform: translateY(-2px);
+}
+
+.po-number {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.po-supplier {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.po-amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f59e0b;
+  text-align: right;
+  margin-bottom: 4px;
+}
+
+.po-status-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  border-radius: 20px;
+  border: 1px solid rgba(245,158,11,0.3);
+  text-align: right;
+}
+
+[data-theme="light"] .po-list-item {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .po-number {
+  color: #0f172a;
+}
