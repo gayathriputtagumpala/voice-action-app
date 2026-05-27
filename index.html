@@ -81,7 +81,8 @@
 
     <!-- Navigation Tabs (Hidden initially) -->
     <nav class="tabs tab-bar">
-      <button class="tab-btn active" data-target="screen-dashboard">🏠 Home</button>
+      <button class="tab-btn active" data-target="screen-dashboard">🏠 HCM</button>
+      <button class="tab-btn" data-target="screen-procurement">📦 Procurement</button>
       <button class="tab-btn" data-target="screen-details">🔍 Profile Details</button>
       <button class="tab-btn" data-target="screen-home">🎤 Voice Input</button>
       <button class="tab-btn" data-target="screen-confirmation" disabled>📋 Confirm</button>
@@ -173,34 +174,44 @@
               <div class="card-title">Change Business Unit</div>
               <div class="card-description">Update employee business unit</div>
             </div>
-            
-            <div class="section-divider">
-              <span>Procurement</span>
+        </section>
+
+        <!-- PROCUREMENT DASHBOARD -->
+        <section id="screen-procurement" class="screen">
+          <div class="hero-section">
+            <div class="hero-badge">⚡ AI POWERED · VOICE ENABLED</div>
+            <h1 class="hero-title">
+              Manage Procurement.<br>
+              <span class="hero-highlight">Just use your voice.</span>
+            </h1>
+            <p class="hero-subtitle">
+              Quickly lookup and approve Purchase Orders directly in Oracle Fusion.
+            </p>
+          </div>
+          
+          <div class="action-grid home-grid">
+            <div class="action-card active" onclick="startPODetails()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon-box" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📄</div>
+              <div class="card-title">PO Status</div>
+              <div class="card-description">Check purchase order details and status</div>
             </div>
 
-            <div class="action-grid home-grid" style="margin-top: 20px;">
-              <div class="action-card active" onclick="startPODetails()">
-                <div class="card-badge badge-available">LIVE</div>
-                <div class="card-icon-box" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📄</div>
-                <div class="card-title">PO Status</div>
-                <div class="card-description">Check purchase order details and status</div>
-              </div>
-
-              <div class="action-card active" onclick="startPOApproval()">
-                <div class="card-badge badge-available">LIVE</div>
-                <div class="card-icon-box" style="background:linear-gradient(135deg,#10b981,#059669)">✅</div>
-                <div class="card-title">Approve PO</div>
-                <div class="card-description">View and approve pending purchase orders</div>
-              </div>
-
-              <div class="action-card coming-soon">
-                <div class="card-badge badge-coming-soon">SOON</div>
-                <div class="card-icon-box" style="background:linear-gradient(135deg,#374151,#1f2937)">📦</div>
-                <div class="card-title">Create PO</div>
-                <div class="card-description">Create a new purchase order in Oracle</div>
-              </div>
+            <div class="action-card active" onclick="startPOApproval()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon-box" style="background:linear-gradient(135deg,#10b981,#059669)">✅</div>
+              <div class="card-title">Approve PO</div>
+              <div class="card-description">View and approve pending purchase orders</div>
             </div>
-          </section>
+
+            <div class="action-card coming-soon">
+              <div class="card-badge badge-coming-soon">SOON</div>
+              <div class="card-icon-box" style="background:linear-gradient(135deg,#374151,#1f2937)">📦</div>
+              <div class="card-title">Create PO</div>
+              <div class="card-description">Create a new purchase order in Oracle</div>
+            </div>
+          </div>
+        </section>
 
         <!-- EMPLOYEE DETAILS LOOKUP SCREEN -->
         <section id="screen-details" class="screen">
