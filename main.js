@@ -2659,7 +2659,7 @@ window.startHireEmployee = function() {
 
   // Fetch legal employers and business units
   fetchLegalEmployers();
-  fetchBusinessUnits();
+  fetchBusinessUnitsForHire();
 
   // Update step dots / UI if needed
   updateStepDots(1);
@@ -2755,7 +2755,7 @@ async function fetchLegalEmployers() {
   }
 }
 
-async function fetchBusinessUnits() {
+async function fetchBusinessUnitsForHire() {
   try {
     const select = document.getElementById('hire-business-unit');
     select.innerHTML = '<option value="">Loading business units...</option>';
