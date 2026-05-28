@@ -2672,7 +2672,7 @@ function hideAllSteps() {
     'employee-details-box', 'step2-actions', 'manager-details-box',
     'dept-selection-box', 'location-selection-box', 'job-selection-box',
     'manager-selection-box', 'position-selection-box', 'grade-selection-box',
-    'hire-employee-box'
+    'hire-employee-box', 'po-details-box', 'po-list-box'
   ];
   stepBoxes.forEach(id => {
     const el = document.getElementById(id);
@@ -2680,7 +2680,7 @@ function hideAllSteps() {
   });
 
   const mainTitle = document.getElementById('main-title');
-  if (mainTitle) mainTitle.textContent = 'Hire New Employee';
+  if (mainTitle) mainTitle.textContent = '';
   const subTitle = document.getElementById('sub-title');
   if (subTitle) subTitle.style.display = 'none';
   const indicator = document.getElementById('input-toggle-container');
