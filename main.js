@@ -2349,6 +2349,7 @@ function closePopup() {
 }
 
 async function handleLogin() {
+  const oracleUrl = document.getElementById('login-oracle-url')?.value.trim();
   const username = document.getElementById('login-username')
     .value.trim();
   const password = document.getElementById('login-password')
@@ -2357,8 +2358,14 @@ async function handleLogin() {
   const btnText = document.getElementById('login-btn-text');
   const spinner = document.getElementById('login-spinner');
   
-  if (!username || !password) {
-    errorEl.textContent = 'Please enter username and password';
+  if (!oracleUrl || !username || !password) {
+    errorEl.textContent = 'Please enter Oracle URL, username, and password';
+    errorEl.style.display = 'block';
+    return;
+  }
+  
+  if (!oracleUrl.startsWith('https://')) {
+    errorEl.textContent = 'Oracle URL must start with https://';
     errorEl.style.display = 'block';
     return;
   }
@@ -2372,9 +2379,9 @@ async function handleLogin() {
   try {
     const response = await fetch(`${API_BASE}/auth/verify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        oracleUrl: ORACLE_BASE_URL,
+        oracleUrl: oracleUrl,
         username: username,
         password: password
       })
