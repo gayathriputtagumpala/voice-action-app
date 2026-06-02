@@ -2349,7 +2349,8 @@ function closePopup() {
 }
 
 async function handleLogin() {
-  const oracleUrl = document.getElementById('login-oracle-url')?.value.trim();
+  const oracleUrlInput = document.getElementById('login-oracle-url');
+  const oracleUrl = oracleUrlInput ? oracleUrlInput.value.trim() : '';
   const username = document.getElementById('login-username')
     .value.trim();
   const password = document.getElementById('login-password')
