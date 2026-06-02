@@ -2372,7 +2372,7 @@ async function handleLogin() {
   try {
     const response = await fetch(`${API_BASE}/auth/verify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
       body: JSON.stringify({
         oracleUrl: ORACLE_BASE_URL,
         username: username,
@@ -2439,14 +2439,6 @@ window.addEventListener('load', () => {
   const loggedIn = sessionStorage.getItem('loggedIn');
   if (loggedIn === 'true') {
     const oracleUrl = sessionStorage.getItem('oracleUrl');
-    
-    // Force logout if the stored URL doesn't match active ORACLE_BASE_URL config
-    if (oracleUrl !== ORACLE_BASE_URL) {
-      console.log('Stale session detected. Forcing logout.');
-      sessionStorage.clear();
-      return;
-    }
-    
     const oracleAuth = sessionStorage.getItem('oracleAuth');
     const userName = sessionStorage.getItem('userName');
     
@@ -2475,8 +2467,8 @@ window.logout = function() {
     .style.display = 'none';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
+  document.getElementById('login-oracle-url').value = '';
 }
-
 // Manager Custom Logic (Dropdown & Voice)
 async function fetchManagers() {
     try {
@@ -3225,7 +3217,7 @@ window.openWhatsAppSettings = async function() {
   modal.style.display = 'flex';
   
   try {
-    const res = await fetch(`${API_BASE}/whatsapp/config`);
+    const res = await fetch(`${API_BASE}/whatsapp/config`, { headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl } });
     if (res.ok) {
       const config = await res.json();
       document.getElementById('ws-phone-id').value = config.phoneId || '';
@@ -3250,9 +3242,7 @@ window.saveWhatsAppSettings = async function() {
   try {
     const res = await fetch(`${API_BASE}/whatsapp/config`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json', 'x-oracle-auth': appState.oracleAuth, 'x-oracle-url': appState.oracleUrl },
       body: JSON.stringify({ phoneId, verifyToken, token })
     });
     
