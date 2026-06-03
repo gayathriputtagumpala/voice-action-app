@@ -2359,13 +2359,13 @@ async function handleLogin() {
   const btnText = document.getElementById('login-btn-text');
   const spinner = document.getElementById('login-spinner');
   
-  if (!oracleUrl || !username || !password) {
-    errorEl.textContent = 'Please enter Oracle URL, username, and password';
+  if (!username || !password) {
+    errorEl.textContent = 'Please enter Oracle username and password';
     errorEl.style.display = 'block';
     return;
   }
   
-  if (!oracleUrl.startsWith('https://')) {
+  if (oracleUrl && !oracleUrl.startsWith('https://')) {
     errorEl.textContent = 'Oracle URL must start with https://';
     errorEl.style.display = 'block';
     return;
@@ -2382,7 +2382,7 @@ async function handleLogin() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        oracleUrl: oracleUrl,
+        oracleUrl: oracleUrl || undefined,
         username: username,
         password: password
       })
