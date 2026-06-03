@@ -19,10 +19,11 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 // Multi-company support configuration
 const COMPANY_ORACLE_URLS = {
   'companya': 'https://fa-eubg-test-saasfademo1.ds-fa.oraclepdemos.com',
-  'companyb': 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com'
+  'companyb': 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com',
+  'dabiqy': 'https://dabiqy.ds-fa.oraclepdemos.com'
 };
 
-const DEFAULT_ORACLE_BASE_URL = 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com';
+const DEFAULT_ORACLE_BASE_URL = 'https://dabiqy.ds-fa.oraclepdemos.com';
 
 // Read optional company code from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
@@ -2382,7 +2383,7 @@ async function handleLogin() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        oracleUrl: oracleUrl || undefined,
+        oracleUrl: oracleUrl || ORACLE_BASE_URL,
         username: username,
         password: password
       })
