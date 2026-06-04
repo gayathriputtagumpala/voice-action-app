@@ -238,22 +238,26 @@
     <h1 class="hero-title">Manage Absences.<br><span class="hero-highlight">Effortlessly.</span></h1>
   </div>
   <!-- Absence Management Actions -->
-<div id="absence-actions" style="display:block; margin-bottom: 40px;">
-  <h3 class="submodule-title" style="margin-bottom: 24px;">🏖️ Absence Management</h3>
-  <div class="action-grid home-grid">
-    
-    <div class="action-card active" 
-         onclick="startViewLeaveBalance()">
-      <div class="card-badge badge-available">LIVE</div>
-      <div class="card-icon-box"
-           style="background:linear-gradient(135deg,#0891b2,#0e7490)">
-        📊
+  <div id="absence-actions" style="display:block; margin-bottom: 40px;">
+    <h3 class="submodule-title" style="margin-bottom: 24px;">🏖️ Absence Management</h3>
+    <div class="action-grid home-grid">
+      
+      <div class="action-card active" onclick="startViewLeaveBalance()">
+        <div class="card-badge badge-available">LIVE</div>
+        <div class="card-icon-box" style="background:linear-gradient(135deg,#0891b2,#0e7490)">📊</div>
+        <div class="card-title">Leave Balance</div>
+        <div class="card-description">Check remaining leave balance for an employee</div>
       </div>
-      <div class="card-title">Leave Balance</div>
-      <div class="card-description">
-        Check remaining leave balance for an employee
+
+      <div class="action-card active" onclick="startApplyLeave()">
+        <div class="card-badge badge-available">LIVE</div>
+        <div class="card-icon-box" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">🗓️</div>
+        <div class="card-title">Apply Leave</div>
+        <div class="card-description">Submit leave request for an employee</div>
       </div>
+      
     </div>
+  </div>
 </section>
 
 <!-- PROCUREMENT DASHBOARD -->
@@ -263,18 +267,34 @@
     <h1 class="hero-title">Manage Procurement.<br><span class="hero-highlight">Seamlessly.</span></h1>
   </div>
   <!-- Procurement Actions -->
-<div id="procurement-actions" style="display:block; margin-bottom: 40px;">
-  <h3 class="submodule-title" style="margin-bottom: 24px;">📦 Procurement</h3>
-  <div class="action-grid home-grid">
-    <!-- Procurement Cards here -->
-<div class="action-card active" onclick="startPODetails()">
-              <div class="card-badge badge-available">LIVE</div>
-              <div class="card-icon-box" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📄</div>
-              <div class="card-title">PO Status</div>
-              <div class="card-description">Check purchase order details and status</div>
-            </div>
+  <div id="procurement-actions" style="display:block; margin-bottom: 40px;">
+    <h3 class="submodule-title" style="margin-bottom: 24px;">📦 Procurement</h3>
+    <div class="action-grid home-grid">
+      
+      <div class="action-card active" onclick="startPODetails()">
+        <div class="card-badge badge-available">LIVE</div>
+        <div class="card-icon-box" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📄</div>
+        <div class="card-title">PO Status</div>
+        <div class="card-description">Check purchase order details and status</div>
+      </div>
 
-        
+      <div class="action-card active" onclick="startPOApproval()">
+        <div class="card-badge badge-available">LIVE</div>
+        <div class="card-icon-box" style="background:linear-gradient(135deg,#10b981,#059669)">✅</div>
+        <div class="card-title">Approve PO</div>
+        <div class="card-description">View and approve pending purchase orders</div>
+      </div>
+
+      <div class="action-card coming-soon">
+        <div class="card-badge badge-coming-soon">SOON</div>
+        <div class="card-icon-box" style="background:linear-gradient(135deg,#374151,#1f2937)">📦</div>
+        <div class="card-title">Create PO</div>
+        <div class="card-description">Create a new purchase order in Oracle</div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
         <!-- EMPLOYEE DETAILS LOOKUP SCREEN -->
         <section id="screen-details" class="screen">
