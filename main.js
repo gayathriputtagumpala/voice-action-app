@@ -144,7 +144,7 @@ window.showOnlyHomeTab = function() {
   const allTabs = document.querySelectorAll('.tab, .nav-tab, .tab-btn, [role="tab"]');
   allTabs.forEach(tab => {
     const text = tab.textContent.trim().toLowerCase();
-    if (!text.includes('home') && !text.includes('hcm') && !text.includes('procurement')) {
+    if (!text.includes('core hr') && !text.includes('absence') && !text.includes('procurement')) {
       tab.style.setProperty('display', 'none', 'important');
       tab.style.setProperty('visibility', 'hidden', 'important');
     } else {
