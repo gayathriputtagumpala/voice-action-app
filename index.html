@@ -89,7 +89,8 @@
 
     <!-- Navigation Tabs (Hidden initially) -->
     <nav class="tabs tab-bar">
-      <button class="tab-btn active" data-target="screen-dashboard">🏠 HCM</button>
+      <button class="tab-btn active" data-target="screen-dashboard">🏢 Core HR</button>
+      <button class="tab-btn" data-target="screen-absence">🏖️ Absence</button>
       <button class="tab-btn" data-target="screen-procurement">📦 Procurement</button>
       <button class="tab-btn" data-target="screen-details">🔍 Profile Details</button>
       <button class="tab-btn" data-target="screen-home">🎤 Voice Input</button>
@@ -191,23 +192,7 @@
   </div>
 </div>
 
-<!-- Absence Management Actions -->
-<div id="absence-actions" style="display:block; margin-bottom: 40px;">
-  <h3 class="submodule-title" style="margin-bottom: 24px;">🏖️ Absence Management</h3>
-  <div class="action-grid home-grid">
-    
-    <div class="action-card active" 
-         onclick="startViewLeaveBalance()">
-      <div class="card-badge badge-available">LIVE</div>
-      <div class="card-icon-box"
-           style="background:linear-gradient(135deg,#0891b2,#0e7490)">
-        📊
-      </div>
-      <div class="card-title">Leave Balance</div>
-      <div class="card-description">
-        Check remaining leave balance for an employee
-      </div>
-    </div>
+
 
     <div class="action-card active"
          onclick="startApplyLeave()">
@@ -225,17 +210,7 @@
   </div>
 </div>
 
-<!-- Procurement Actions -->
-<div id="procurement-actions" style="display:block; margin-bottom: 40px;">
-  <h3 class="submodule-title" style="margin-bottom: 24px;">📦 Procurement</h3>
-  <div class="action-grid home-grid">
-    <!-- Procurement Cards here -->
-<div class="action-card active" onclick="startPODetails()">
-              <div class="card-badge badge-available">LIVE</div>
-              <div class="card-icon-box" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📄</div>
-              <div class="card-title">PO Status</div>
-              <div class="card-description">Check purchase order details and status</div>
-            </div>
+
 
             <div class="action-card active" onclick="startPOApproval()">
               <div class="card-badge badge-available">LIVE</div>
@@ -253,9 +228,52 @@
   </div>
 </div>
 
+
 </section>
 
-        <!-- PROCUREMENT DASHBOARD -->
+<!-- ABSENCE DASHBOARD -->
+<section id="screen-absence" class="screen">
+  <div class="hero-section">
+    <div class="hero-badge">⚡ AI POWERED · VOICE ENABLED</div>
+    <h1 class="hero-title">Manage Absences.<br><span class="hero-highlight">Effortlessly.</span></h1>
+  </div>
+  <!-- Absence Management Actions -->
+<div id="absence-actions" style="display:block; margin-bottom: 40px;">
+  <h3 class="submodule-title" style="margin-bottom: 24px;">🏖️ Absence Management</h3>
+  <div class="action-grid home-grid">
+    
+    <div class="action-card active" 
+         onclick="startViewLeaveBalance()">
+      <div class="card-badge badge-available">LIVE</div>
+      <div class="card-icon-box"
+           style="background:linear-gradient(135deg,#0891b2,#0e7490)">
+        📊
+      </div>
+      <div class="card-title">Leave Balance</div>
+      <div class="card-description">
+        Check remaining leave balance for an employee
+      </div>
+    </div>
+</section>
+
+<!-- PROCUREMENT DASHBOARD -->
+<section id="screen-procurement" class="screen">
+  <div class="hero-section">
+    <div class="hero-badge">⚡ AI POWERED · VOICE ENABLED</div>
+    <h1 class="hero-title">Manage Procurement.<br><span class="hero-highlight">Seamlessly.</span></h1>
+  </div>
+  <!-- Procurement Actions -->
+<div id="procurement-actions" style="display:block; margin-bottom: 40px;">
+  <h3 class="submodule-title" style="margin-bottom: 24px;">📦 Procurement</h3>
+  <div class="action-grid home-grid">
+    <!-- Procurement Cards here -->
+<div class="action-card active" onclick="startPODetails()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon-box" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📄</div>
+              <div class="card-title">PO Status</div>
+              <div class="card-description">Check purchase order details and status</div>
+            </div>
+
         
 
         <!-- EMPLOYEE DETAILS LOOKUP SCREEN -->
