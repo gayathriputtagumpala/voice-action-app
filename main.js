@@ -1,46 +1,19 @@
 
-function hideAllHomeScreens() {
-  const hm = document.getElementById('home-modules');
-  if (hm) hm.style.display = 'none';
-  const hcm = document.getElementById('hcm-submodules');
-  if (hcm) hcm.style.display = 'none';
-  const chr = document.getElementById('core-hr-actions');
-  if (chr) chr.style.display = 'none';
-  const abs = document.getElementById('absence-actions');
-  if (abs) abs.style.display = 'none';
-  const pro = document.getElementById('procurement-actions');
-  if (pro) pro.style.display = 'none';
-}
+function hideAllHomeScreens() {}
 
 window.showHomeModules = function() {
-  hideAllHomeScreens();
-  const hm = document.getElementById('home-modules');
-  if (hm) hm.style.display = 'flex';
-}
-
-window.showHCMModules = function() {
-  hideAllHomeScreens();
-  const hcm = document.getElementById('hcm-submodules');
-  if (hcm) hcm.style.display = 'block';
-}
-
-window.showCoreHRActions = function() {
-  hideAllHomeScreens();
   const chr = document.getElementById('core-hr-actions');
   if (chr) chr.style.display = 'block';
-}
-
-window.showAbsenceActions = function() {
-  hideAllHomeScreens();
   const abs = document.getElementById('absence-actions');
   if (abs) abs.style.display = 'block';
-}
-
-window.showProcurementActions = function() {
-  hideAllHomeScreens();
   const pro = document.getElementById('procurement-actions');
   if (pro) pro.style.display = 'block';
 }
+
+window.showHCMModules = function() {}
+window.showCoreHRActions = function() {}
+window.showAbsenceActions = function() {}
+window.showProcurementActions = function() {}
 
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
   if (!window.trustedTypes.defaultPolicy) {

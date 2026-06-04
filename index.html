@@ -116,77 +116,10 @@
           </div>
 
 
-<!-- Main Module Cards -->
-<div id="home-modules" class="modules-grid">
-
-  <!-- HCM Module Card -->
-  <div class="module-card" onclick="showHCMModules()">
-    <div class="module-icon">👥</div>
-    <div class="module-info">
-      <h3>Human Capital Management</h3>
-      <p>Core HR · Absence Management</p>
-    </div>
-    <div class="module-arrow">›</div>
-  </div>
-
-  <!-- Procurement Module Card -->
-  <div class="module-card" onclick="showProcurementActions()">
-    <div class="module-icon">📦</div>
-    <div class="module-info">
-      <h3>Procurement</h3>
-      <p>Purchase Orders · Approvals</p>
-    </div>
-    <div class="module-arrow">›</div>
-  </div>
-
-</div>
-
-<!-- HCM Sub-modules (hidden by default) -->
-<div id="hcm-submodules" style="display:none;">
-  
-  <div class="breadcrumb" onclick="showHomeModules()">
-    ← Home
-  </div>
-  <h3 class="submodule-title">
-    👥 Human Capital Management
-  </h3>
-
-  <div class="modules-grid">
-
-    <!-- Core HR Sub-module -->
-    <div class="module-card" onclick="showCoreHRActions()">
-      <div class="module-icon">🏢</div>
-      <div class="module-info">
-        <h3>Core HR</h3>
-        <p>Manager · Department · Location · Hire</p>
-      </div>
-      <div class="module-arrow">›</div>
-    </div>
-
-    <!-- Absence Management Sub-module -->
-    <div class="module-card" onclick="showAbsenceActions()">
-      <div class="module-icon">🏖️</div>
-      <div class="module-info">
-        <h3>Absence Management</h3>
-        <p>Leave Balance · Apply Leave</p>
-      </div>
-      <div class="module-arrow">›</div>
-    </div>
-
-  </div>
-</div>
-
-<!-- Core HR Actions (hidden by default) -->
-<div id="core-hr-actions" style="display:none;">
-  
-  <div class="breadcrumb">
-    <span onclick="showHomeModules()">Home</span> › 
-    <span onclick="showHCMModules()">HCM</span> › 
-    Core HR
-  </div>
-  <h3 class="submodule-title">🏢 Core HR Actions</h3>
-
-  <div class="action-grid">
+<!-- Core HR Actions -->
+<div id="core-hr-actions" style="display:block; margin-top: 20px; margin-bottom: 40px;">
+  <h3 class="submodule-title" style="margin-bottom: 24px;">🏢 Core HR Actions</h3>
+  <div class="action-grid home-grid">
     <!-- Existing Action Cards inserted here -->
 <div class="action-card active" onclick="startViewDetails()">
               <div class="card-badge badge-available">LIVE</div>
@@ -258,19 +191,10 @@
   </div>
 </div>
 
-<!-- Absence Management Actions (hidden by default) -->
-<div id="absence-actions" style="display:none;">
-  
-  <div class="breadcrumb">
-    <span onclick="showHomeModules()">Home</span> › 
-    <span onclick="showHCMModules()">HCM</span> › 
-    Absence Management
-  </div>
-  <h3 class="submodule-title">
-    🏖️ Absence Management
-  </h3>
-
-  <div class="action-grid">
+<!-- Absence Management Actions -->
+<div id="absence-actions" style="display:block; margin-bottom: 40px;">
+  <h3 class="submodule-title" style="margin-bottom: 24px;">🏖️ Absence Management</h3>
+  <div class="action-grid home-grid">
     
     <div class="action-card active" 
          onclick="startViewLeaveBalance()">
@@ -301,15 +225,10 @@
   </div>
 </div>
 
-<!-- Procurement Actions (hidden by default) -->
-<div id="procurement-actions" style="display:none;">
-  
-  <div class="breadcrumb" onclick="showHomeModules()">
-    ← Home
-  </div>
-  <h3 class="submodule-title">📦 Procurement</h3>
-
-  <div class="action-grid">
+<!-- Procurement Actions -->
+<div id="procurement-actions" style="display:block; margin-bottom: 40px;">
+  <h3 class="submodule-title" style="margin-bottom: 24px;">📦 Procurement</h3>
+  <div class="action-grid home-grid">
     <!-- Procurement Cards here -->
 <div class="action-card active" onclick="startPODetails()">
               <div class="card-badge badge-available">LIVE</div>
