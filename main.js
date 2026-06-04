@@ -3663,13 +3663,17 @@ window.checkLeaveBalance = async function() {
       `;
 
       balanceData.items.forEach(item => {
+        const typeName = item.absenceType || item.absenceTypeName || 'Leave Type';
+        const balValue = item.remainingEntitlement || item.balance;
+        const displayValue = balValue ? `${balValue} days` : (item.formattedDuration ? `${item.formattedDuration} (Taken)` : 'N/A');
+
         html += `
           <div class="glass-card-row">
             <span class="label">
-              ${item.absenceTypeName || 'Leave Type'}
+              ${typeName}
             </span>
             <span class="value" style="color:#10b981; font-weight:600;">
-              ${item.remainingEntitlement || item.balance || 'N/A'} days
+              ${displayValue}
             </span>
           </div>
         `;
