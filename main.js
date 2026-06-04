@@ -2715,11 +2715,12 @@ window.startHireEmployee = function() {
 // Utility to hide all step boxes under screen-home
 function hideAllSteps() {
   const stepBoxes = [
-    'typeSection', 'voiceSection', 'transcript-box', 'voice-confirm-box',
+    'input-toggle-container', 'typeSection', 'voiceSection', 'transcript-box', 'voice-confirm-box',
     'employee-details-box', 'step2-actions', 'manager-details-box',
     'dept-selection-box', 'location-selection-box', 'job-selection-box',
     'manager-selection-box', 'position-selection-box', 'grade-selection-box',
-    'hire-employee-box', 'po-details-box', 'po-list-box'
+    'bu-selection-box', 'hire-employee-box', 'po-details-box', 'po-list-box',
+    'leave-balance-box', 'apply-leave-box'
   ];
   stepBoxes.forEach(id => {
     const el = document.getElementById(id);
@@ -3890,19 +3891,6 @@ async function confirmApplyLeave() {
     console.error('Apply leave error:', err);
     showResult(false, 'Connection error. Please try again.');
   }
-}
-
-function hideAllSteps() {
-  const steps = [
-    'input-toggle-container', 'typeSection', 'voiceSection', 'transcript-box', 'voice-confirm-box', 'employee-details-box',
-    'step2-actions', 'manager-details-box', 'dept-selection-box', 'location-selection-box', 'job-selection-box',
-    'manager-selection-box', 'position-selection-box', 'grade-selection-box', 'bu-selection-box', 'hire-employee-box',
-    'po-details-box', 'po-list-box', 'leave-balance-box', 'apply-leave-box'
-  ];
-  steps.forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = 'none';
-  });
 }
 
 window.hideActionTabs = function() { showOnlyHomeTab(); }
