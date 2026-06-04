@@ -114,9 +114,81 @@
               Speak in English, Tamil, Hindi, Telugu — or any Indian language.<br>
             </p>
           </div>
-          
-          <div class="action-grid home-grid">
-            <div class="action-card active" onclick="startViewDetails()">
+
+
+<!-- Main Module Cards -->
+<div id="home-modules" class="modules-grid">
+
+  <!-- HCM Module Card -->
+  <div class="module-card" onclick="showHCMModules()">
+    <div class="module-icon">👥</div>
+    <div class="module-info">
+      <h3>Human Capital Management</h3>
+      <p>Core HR · Absence Management</p>
+    </div>
+    <div class="module-arrow">›</div>
+  </div>
+
+  <!-- Procurement Module Card -->
+  <div class="module-card" onclick="showProcurementActions()">
+    <div class="module-icon">📦</div>
+    <div class="module-info">
+      <h3>Procurement</h3>
+      <p>Purchase Orders · Approvals</p>
+    </div>
+    <div class="module-arrow">›</div>
+  </div>
+
+</div>
+
+<!-- HCM Sub-modules (hidden by default) -->
+<div id="hcm-submodules" style="display:none;">
+  
+  <div class="breadcrumb" onclick="showHomeModules()">
+    ← Home
+  </div>
+  <h3 class="submodule-title">
+    👥 Human Capital Management
+  </h3>
+
+  <div class="modules-grid">
+
+    <!-- Core HR Sub-module -->
+    <div class="module-card" onclick="showCoreHRActions()">
+      <div class="module-icon">🏢</div>
+      <div class="module-info">
+        <h3>Core HR</h3>
+        <p>Manager · Department · Location · Hire</p>
+      </div>
+      <div class="module-arrow">›</div>
+    </div>
+
+    <!-- Absence Management Sub-module -->
+    <div class="module-card" onclick="showAbsenceActions()">
+      <div class="module-icon">🏖️</div>
+      <div class="module-info">
+        <h3>Absence Management</h3>
+        <p>Leave Balance · Apply Leave</p>
+      </div>
+      <div class="module-arrow">›</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Core HR Actions (hidden by default) -->
+<div id="core-hr-actions" style="display:none;">
+  
+  <div class="breadcrumb">
+    <span onclick="showHomeModules()">Home</span> › 
+    <span onclick="showHCMModules()">HCM</span> › 
+    Core HR
+  </div>
+  <h3 class="submodule-title">🏢 Core HR Actions</h3>
+
+  <div class="action-grid">
+    <!-- Existing Action Cards inserted here -->
+<div class="action-card active" onclick="startViewDetails()">
               <div class="card-badge badge-available">LIVE</div>
               <div class="card-icon icon-purple">🔍</div>
               <div class="card-title">Employee Details</div>
@@ -181,24 +253,64 @@
               <div class="card-icon icon-purple">🌍</div>
               <div class="card-title">Change Business Unit</div>
               <div class="card-description">Update employee business unit</div>
-            </div>
-        </section>
+            
+  </div>
+</div>
 
-        <!-- PROCUREMENT DASHBOARD -->
-        <section id="screen-procurement" class="screen">
-          <div class="hero-section">
-            <div class="hero-badge">⚡ AI POWERED · VOICE ENABLED</div>
-            <h1 class="hero-title">
-              Manage Procurement.<br>
-              <span class="hero-highlight">Just use your voice.</span>
-            </h1>
-            <p class="hero-subtitle">
-              Quickly lookup and approve Purchase Orders directly in Oracle Fusion.
-            </p>
-          </div>
-          
-          <div class="action-grid home-grid">
-            <div class="action-card active" onclick="startPODetails()">
+<!-- Absence Management Actions (hidden by default) -->
+<div id="absence-actions" style="display:none;">
+  
+  <div class="breadcrumb">
+    <span onclick="showHomeModules()">Home</span> › 
+    <span onclick="showHCMModules()">HCM</span> › 
+    Absence Management
+  </div>
+  <h3 class="submodule-title">
+    🏖️ Absence Management
+  </h3>
+
+  <div class="action-grid">
+    
+    <div class="action-card active" 
+         onclick="startViewLeaveBalance()">
+      <div class="card-badge badge-available">LIVE</div>
+      <div class="card-icon-box"
+           style="background:linear-gradient(135deg,#0891b2,#0e7490)">
+        📊
+      </div>
+      <div class="card-title">Leave Balance</div>
+      <div class="card-description">
+        Check remaining leave balance for an employee
+      </div>
+    </div>
+
+    <div class="action-card active"
+         onclick="startApplyLeave()">
+      <div class="card-badge badge-available">LIVE</div>
+      <div class="card-icon-box"
+           style="background:linear-gradient(135deg,#10b981,#059669)">
+        📅
+      </div>
+      <div class="card-title">Apply Leave</div>
+      <div class="card-description">
+        Submit leave request for an employee
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Procurement Actions (hidden by default) -->
+<div id="procurement-actions" style="display:none;">
+  
+  <div class="breadcrumb" onclick="showHomeModules()">
+    ← Home
+  </div>
+  <h3 class="submodule-title">📦 Procurement</h3>
+
+  <div class="action-grid">
+    <!-- Procurement Cards here -->
+<div class="action-card active" onclick="startPODetails()">
               <div class="card-badge badge-available">LIVE</div>
               <div class="card-icon-box" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📄</div>
               <div class="card-title">PO Status</div>
@@ -218,8 +330,13 @@
               <div class="card-title">Create PO</div>
               <div class="card-description">Create a new purchase order in Oracle</div>
             </div>
-          </div>
-        </section>
+  </div>
+</div>
+
+</section>
+
+        <!-- PROCUREMENT DASHBOARD -->
+        
 
         <!-- EMPLOYEE DETAILS LOOKUP SCREEN -->
         <section id="screen-details" class="screen">
@@ -791,6 +908,108 @@
                 </button>
               </div>
             </div>
+
+            
+<!-- Leave Balance Screen -->
+<div id="leave-balance-box" style="display:none;">
+  <h2 class="step-title">Leave Balance</h2>
+  <p style="color:#64748b; font-size:13px; 
+             margin-bottom:20px;">
+    Enter employee person number to check leave balance
+  </p>
+
+  <input type="text"
+         id="leave-person-number"
+         class="person-input"
+         placeholder="Enter Person Number e.g. 1405">
+
+  <button class="search-btn"
+          onclick="checkLeaveBalance()"
+          style="margin-top:12px;">
+    📊 Check Balance
+  </button>
+
+  <div id="leave-balance-result"
+       style="display:none; margin-top:20px;">
+  </div>
+
+  <button onclick="showAbsenceActions()"
+          style="width:100%; padding:12px; margin-top:8px;
+                 background:transparent;
+                 border:1px solid rgba(255,255,255,0.1);
+                 border-radius:12px; color:#64748b;
+                 cursor:pointer; font-size:14px;">
+    ← Back
+  </button>
+</div>
+
+<!-- Apply Leave Screen -->
+<div id="apply-leave-box" style="display:none;">
+  <h2 class="step-title">Apply Leave</h2>
+
+  <div class="hire-form">
+
+    <div class="input-group">
+      <label>Person Number *</label>
+      <input type="text"
+             id="leave-emp-number"
+             placeholder="e.g. 1405" class="person-input">
+    </div>
+
+    <div class="input-group">
+      <label>Absence Type *</label>
+      <select id="leave-type-select" class="person-input">
+        <option value="">Select Leave Type...</option>
+        <option value="300000073800559">Annual Leave</option>
+        <option value="300000073800560">Sick Leave</option>
+        <option value="300000073800561">Casual Leave</option>
+      </select>
+    </div>
+
+    <div class="hire-row two-col">
+      <div class="input-group">
+        <label>Start Date *</label>
+        <input type="date" id="leave-start-date" class="person-input">
+      </div>
+      <div class="input-group">
+        <label>End Date *</label>
+        <input type="date" id="leave-end-date" class="person-input">
+      </div>
+    </div>
+
+    <div class="hire-row two-col">
+      <div class="input-group">
+        <label>Start Time</label>
+        <input type="time" 
+               id="leave-start-time" 
+               value="08:30" class="person-input">
+      </div>
+      <div class="input-group">
+        <label>End Time</label>
+        <input type="time" 
+               id="leave-end-time" 
+               value="17:30" class="person-input">
+      </div>
+    </div>
+
+    <button class="search-btn"
+            onclick="proceedLeaveConfirm()"
+            style="margin-top:16px;">
+      Proceed to Confirm
+    </button>
+
+    <button onclick="showAbsenceActions()"
+            style="width:100%; padding:12px; margin-top:8px;
+                   background:transparent;
+                   border:1px solid rgba(255,255,255,0.1);
+                   border-radius:12px; color:#64748b;
+                   cursor:pointer; font-size:14px;">
+      ← Back
+    </button>
+
+  </div>
+</div>
+
 
             <!-- PO Details Box -->
             <div id="po-details-box" style="display:none;">

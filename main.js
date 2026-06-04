@@ -1,3 +1,47 @@
+
+function hideAllHomeScreens() {
+  const hm = document.getElementById('home-modules');
+  if (hm) hm.style.display = 'none';
+  const hcm = document.getElementById('hcm-submodules');
+  if (hcm) hcm.style.display = 'none';
+  const chr = document.getElementById('core-hr-actions');
+  if (chr) chr.style.display = 'none';
+  const abs = document.getElementById('absence-actions');
+  if (abs) abs.style.display = 'none';
+  const pro = document.getElementById('procurement-actions');
+  if (pro) pro.style.display = 'none';
+}
+
+window.showHomeModules = function() {
+  hideAllHomeScreens();
+  const hm = document.getElementById('home-modules');
+  if (hm) hm.style.display = 'flex';
+}
+
+window.showHCMModules = function() {
+  hideAllHomeScreens();
+  const hcm = document.getElementById('hcm-submodules');
+  if (hcm) hcm.style.display = 'block';
+}
+
+window.showCoreHRActions = function() {
+  hideAllHomeScreens();
+  const chr = document.getElementById('core-hr-actions');
+  if (chr) chr.style.display = 'block';
+}
+
+window.showAbsenceActions = function() {
+  hideAllHomeScreens();
+  const abs = document.getElementById('absence-actions');
+  if (abs) abs.style.display = 'block';
+}
+
+window.showProcurementActions = function() {
+  hideAllHomeScreens();
+  const pro = document.getElementById('procurement-actions');
+  if (pro) pro.style.display = 'block';
+}
+
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
   if (!window.trustedTypes.defaultPolicy) {
     try {
@@ -152,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Total tabs found:', allTabs.length);
   allTabs.forEach(tab => console.log('Tab:', tab.textContent.trim(), tab.className));
   showOnlyHomeTab();
+  showHomeModules();
 
   // Theme Toggle Logic
   const themeToggle = document.getElementById('themeToggle');
@@ -317,6 +362,7 @@ tabBtns.forEach(btn => {
     const target = btn.getAttribute('data-target');
     if (target === 'screen-dashboard') {
       showOnlyHomeTab();
+  showHomeModules();
       resetApp();
     } else {
       switchTab(target);
@@ -2719,7 +2765,9 @@ function addToAuditLog(entry) {
 
 // Navigate Home Cancel Button
 window.goHome = function() {
-  showOnlyHomeTab();
+  hideActionTabs();
+  switchTab('screen-dashboard');
+  showHomeModules();
   resetApp();
 }
 
@@ -3554,3 +3602,307 @@ window.resetPOSearch = function() {
   document.getElementById('po-result-card').style.display = 'none';
   currentPO = null;
 }
+
+
+// Start View Leave Balance
+window.startViewLeaveBalance = function() {
+  appState.currentAction = 'view_leave_balance';
+  showAllTabs();
+  switchTab('screen-home'); // Use existing screen for voice input logic
+  hideAllSteps();
+  document.getElementById('step-indicator').style.display = 'none';
+  document.getElementById('main-title').style.display = 'none';
+  document.getElementById('leave-balance-box').style.display = 'block';
+  document.getElementById('leave-balance-result').style.display = 'none';
+}
+
+// Start Apply Leave
+window.startApplyLeave = function() {
+  appState.currentAction = 'apply_leave';
+  showAllTabs();
+  switchTab('screen-home');
+  hideAllSteps();
+  document.getElementById('step-indicator').style.display = 'none';
+  document.getElementById('main-title').style.display = 'none';
+  document.getElementById('apply-leave-box').style.display = 'block';
+
+  // Set today as default start date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('leave-start-date').value = today;
+  document.getElementById('leave-end-date').value = today;
+
+  // Fetch absence types
+  fetchAbsenceTypes();
+}
+
+// Check leave balance
+window.checkLeaveBalance = async function() {
+  const personNumber = document.getElementById('leave-person-number').value.trim();
+
+  if (!personNumber) {
+    alert('Please enter person number');
+    return;
+  }
+
+  try {
+    const btn = document.querySelector('#leave-balance-box .search-btn');
+    if (btn) {
+      btn.textContent = 'Checking...';
+      btn.disabled = true;
+    }
+
+    // First get personId from person number
+    const workerRes = await fetch(
+      `${API_BASE}/oracle/worker?person_number=${personNumber}`,
+      {
+        headers: {
+          'x-oracle-auth': appState.oracleAuth || sessionStorage.getItem('oracleAuth'),
+          'x-oracle-url': appState.oracleUrl || sessionStorage.getItem('oracleUrl')
+        }
+      }
+    );
+
+    const workerData = await workerRes.json();
+
+    if (!workerRes.ok) {
+      alert(workerData.error || 'Employee not found');
+      return;
+    }
+
+    const personId = workerData.PersonId;
+
+    // Get leave balance
+    const balanceRes = await fetch(`${API_BASE}/oracle/leavebalance?personId=${personId}`);
+
+    const balanceData = await balanceRes.json();
+    console.log('Leave balance data:', balanceData);
+
+    const resultDiv = document.getElementById('leave-balance-result');
+    resultDiv.style.display = 'block';
+
+    if (balanceData.items && balanceData.items.length > 0) {
+      let html = `
+        <div class="glass-card">
+          <h4 style="color:#f1f5f9; margin-bottom:12px; font-size:15px;">
+            Leave Balance for ${workerData.DisplayName}
+          </h4>
+      `;
+
+      balanceData.items.forEach(item => {
+        html += `
+          <div class="glass-card-row">
+            <span class="label">
+              ${item.absenceTypeName || 'Leave Type'}
+            </span>
+            <span class="value" style="color:#10b981; font-weight:600;">
+              ${item.remainingEntitlement || item.balance || 'N/A'} days
+            </span>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      resultDiv.innerHTML = html;
+    } else {
+      resultDiv.innerHTML = `
+        <div class="glass-card" style="text-align:center; color:#64748b;">
+          No leave balance records found for this employee.
+        </div>
+      `;
+    }
+
+  } catch (err) {
+    console.error('Leave balance error:', err);
+    alert('Failed to fetch leave balance. Please try again.');
+  } finally {
+    const btn = document.querySelector('#leave-balance-box .search-btn');
+    if (btn) {
+      btn.textContent = '📊 Check Balance';
+      btn.disabled = false;
+    }
+  }
+}
+
+// Fetch absence types
+async function fetchAbsenceTypes() {
+  try {
+    const res = await fetch(`${API_BASE}/oracle/absencetypes`);
+    const data = await res.json();
+
+    const select = document.getElementById('leave-type-select');
+    if (select && data.types && data.types.length > 0) {
+      select.innerHTML = '<option value="">Select Leave Type...</option>';
+      data.types.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.AbsenceTypeId;
+        opt.textContent = t.Name;
+        select.appendChild(opt);
+      });
+    }
+  } catch (err) {
+    console.error('Absence types error:', err);
+  }
+}
+
+// Proceed to leave confirmation
+window.proceedLeaveConfirm = async function() {
+  const personNumber = document.getElementById('leave-emp-number').value.trim();
+  const absenceTypeId = document.getElementById('leave-type-select').value;
+  const startDate = document.getElementById('leave-start-date').value;
+  const endDate = document.getElementById('leave-end-date').value;
+  const startTime = document.getElementById('leave-start-time').value;
+  const endTime = document.getElementById('leave-end-time').value;
+  const absenceTypeName = document.getElementById('leave-type-select').options[
+    document.getElementById('leave-type-select').selectedIndex
+  ].text;
+
+  if (!personNumber || !absenceTypeId || !startDate || !endDate) {
+    alert('Please fill all required fields');
+    return;
+  }
+
+  if (new Date(endDate) < new Date(startDate)) {
+    alert('End date cannot be before start date');
+    return;
+  }
+
+  try {
+    const workerRes = await fetch(
+      `${API_BASE}/oracle/worker?person_number=${personNumber}`,
+      {
+        headers: {
+          'x-oracle-auth': appState.oracleAuth || sessionStorage.getItem('oracleAuth'),
+          'x-oracle-url': appState.oracleUrl || sessionStorage.getItem('oracleUrl')
+        }
+      }
+    );
+
+    const workerData = await workerRes.json();
+
+    if (!workerRes.ok) {
+      alert(workerData.error || 'Employee not found');
+      return;
+    }
+
+    appState.leaveData = {
+      personId: workerData.PersonId,
+      personNumber: personNumber,
+      employeeName: workerData.DisplayName,
+      legalEntityId: 300000046974965,
+      absenceTypeId: Number(absenceTypeId),
+      absenceTypeName: absenceTypeName,
+      startDate: startDate,
+      endDate: endDate,
+      startTime: startTime || '08:30',
+      endTime: endTime || '17:30'
+    };
+
+    showLeaveConfirmation();
+
+  } catch (err) {
+    console.error('Leave confirm error:', err);
+    alert('Failed to get employee details. Please try again.');
+  }
+}
+
+function showLeaveConfirmation() {
+  const l = appState.leaveData;
+  switchTab('screen-confirmation');
+
+  const confirmCard = document.querySelector('.confirm-card');
+  if (confirmCard) {
+    confirmCard.innerHTML = `
+      <div class="glass-card-row">
+        <span class="label">Action</span>
+        <span class="value">Apply Leave</span>
+      </div>
+      <div class="glass-card-row">
+        <span class="label">Employee</span>
+        <span class="value">
+          ${l.employeeName} (${l.personNumber})
+        </span>
+      </div>
+      <div class="glass-card-row">
+        <span class="label">Leave Type</span>
+        <span class="value">${l.absenceTypeName}</span>
+      </div>
+      <div class="glass-card-row">
+        <span class="label">Start Date</span>
+        <span class="value">${l.startDate}</span>
+      </div>
+      <div class="glass-card-row">
+        <span class="label">End Date</span>
+        <span class="value">${l.endDate}</span>
+      </div>
+      <div class="glass-card-row">
+        <span class="label">Start Time</span>
+        <span class="value">${l.startTime}</span>
+      </div>
+      <div class="glass-card-row">
+        <span class="label">End Time</span>
+        <span class="value">${l.endTime}</span>
+      </div>
+    `;
+
+    // Overwrite actions
+    const actions = document.querySelector('#screen-confirmation .actions');
+    if (actions) {
+      actions.innerHTML = `
+        <button id="btn-confirm-leave" class="search-btn"
+                style="background:linear-gradient(135deg,#10b981,#059669);
+                box-shadow:0 8px 24px rgba(16,185,129,0.3);">
+          ✅ Submit Leave
+        </button>
+        <button onclick="startApplyLeave()" class="btn btn-danger">
+          ❌ Cancel
+        </button>
+      `;
+      document.getElementById('btn-confirm-leave').addEventListener('click', confirmApplyLeave);
+    }
+  }
+}
+
+async function confirmApplyLeave() {
+  const btn = document.getElementById('btn-confirm-leave');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/oracle/applyleave`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(appState.leaveData)
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showResult(true,
+        `Leave submitted successfully!\nEmployee: ${appState.leaveData.employeeName}\nFrom: ${appState.leaveData.startDate} To: ${appState.leaveData.endDate}`
+      );
+    } else {
+      showResult(false, data.error || 'Failed to submit leave request');
+    }
+
+  } catch (err) {
+    console.error('Apply leave error:', err);
+    showResult(false, 'Connection error. Please try again.');
+  }
+}
+
+function hideAllSteps() {
+  const steps = [
+    'input-toggle-container', 'typeSection', 'voiceSection', 'transcript-box', 'voice-confirm-box', 'employee-details-box',
+    'step2-actions', 'manager-details-box', 'dept-selection-box', 'location-selection-box', 'job-selection-box',
+    'manager-selection-box', 'position-selection-box', 'grade-selection-box', 'bu-selection-box', 'hire-employee-box',
+    'po-details-box', 'po-list-box', 'leave-balance-box', 'apply-leave-box'
+  ];
+  steps.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+}
+
+window.hideActionTabs = function() { showOnlyHomeTab(); }
