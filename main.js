@@ -37,10 +37,10 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 const COMPANY_ORACLE_URLS = {
   'companya': 'https://fa-eubg-test-saasfademo1.ds-fa.oraclepdemos.com',
   'companyb': 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com',
-  'dabiqy': 'https://dabiqy.ds-fa.oraclepdemos.com'
+  'dabiqy': 'https://fa-etaj-saasfademo1.ds-fa.oraclepdemos.com'
 };
 
-const DEFAULT_ORACLE_BASE_URL = 'https://dabiqy.ds-fa.oraclepdemos.com';
+const DEFAULT_ORACLE_BASE_URL = 'https://fa-etaj-saasfademo1.ds-fa.oraclepdemos.com';
 
 // Read optional company code from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
@@ -3766,7 +3766,7 @@ window.proceedLeaveConfirm = async function() {
       personId: workerData.PersonId,
       personNumber: personNumber,
       employeeName: workerData.DisplayName,
-      legalEntityId: 300000046974965,
+      employer: workerData.LegalEmployerName,
       absenceTypeId: Number(absenceTypeId),
       absenceTypeName: absenceTypeName,
       startDate: startDate,
