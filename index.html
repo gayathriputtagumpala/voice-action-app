@@ -220,6 +220,19 @@
         <div class="card-description">Submit leave request for an employee</div>
       </div>
       
+      <div class="action-card active"
+           onclick="startLeaveApprovals()">
+        <div class="card-badge badge-available">LIVE</div>
+        <div class="card-icon-box"
+             style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+          ✅
+        </div>
+        <div class="card-title">Leave Approvals</div>
+        <div class="card-description">
+          View and approve pending leave requests
+        </div>
+      </div>
+      
     </div>
   </div>
 </section>
@@ -922,7 +935,69 @@
       ← Back
     </button>
 
+    </div>
+</div>
+
+<div id="leave-approvals-box" style="display:none;">
+  <h2 class="step-title">Pending Leave Approvals</h2>
+  <p style="color:#64748b; font-size:13px; 
+             margin-bottom:16px;">
+    All leave requests pending your approval
+  </p>
+
+  <div id="leave-approvals-container">
+    <p style="color:#64748b; text-align:center; 
+               padding:20px;">
+      Loading...
+    </p>
   </div>
+
+  <button onclick="showAbsenceActions()"
+          style="width:100%; padding:12px; margin-top:16px;
+                 background:transparent;
+                 border:1px solid rgba(255,255,255,0.1);
+                 border-radius:12px; color:#64748b;
+                 cursor:pointer; font-size:14px;">
+    ← Back
+  </button>
+</div>
+
+<!-- Leave Approval Detail Screen -->
+<div id="leave-approval-detail-box" style="display:none;">
+  <h2 class="step-title">Leave Request Detail</h2>
+
+  <div id="leave-approval-detail-card"
+       class="glass-card"
+       style="margin-bottom:20px;">
+  </div>
+
+  <div style="display:flex; gap:12px;">
+    <button id="btn-approve-leave"
+            class="search-btn"
+            style="background:linear-gradient(
+              135deg,#10b981,#059669);
+              box-shadow:0 8px 24px rgba(16,185,129,0.3);">
+      ✅ Approve
+    </button>
+    <button id="btn-reject-leave"
+            style="flex:1; padding:14px;
+                   background:transparent;
+                   border:1px solid rgba(239,68,68,0.3);
+                   border-radius:12px; color:#ef4444;
+                   cursor:pointer; font-size:14px;
+                   font-weight:600;">
+      ❌ Reject
+    </button>
+  </div>
+
+  <button onclick="startLeaveApprovals()"
+          style="width:100%; padding:12px; margin-top:8px;
+                 background:transparent;
+                 border:1px solid rgba(255,255,255,0.1);
+                 border-radius:12px; color:#64748b;
+                 cursor:pointer; font-size:14px;">
+    ← Back to List
+  </button>
 </div>
 
 

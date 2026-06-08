@@ -3871,3 +3871,217 @@ async function confirmApplyLeave() {
 }
 
 window.hideActionTabs = function() { showOnlyHomeTab(); }
+
+let currentLeaveApproval = null;
+
+window.startLeaveApprovals = async function() {
+  appState.currentAction = 'leave_approvals';
+  showAllTabs();
+  switchToTab('voice-input');
+  hideAllSteps();
+  document.getElementById('leave-approvals-box')
+    .style.display = 'block';
+  await fetchPendingLeaves();
+}
+
+async function fetchPendingLeaves() {
+  const container = document.getElementById(
+    'leave-approvals-container'
+  );
+  container.innerHTML = 
+    '<p style="color:#64748b; text-align:center; padding:20px;">Loading...</p>';
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/oracle/pendingleaves`
+    );
+    const data = await res.json();
+
+    if (res.ok && data.leaves && data.leaves.length > 0) {
+      container.innerHTML = 
+        `<p style="color:#94a3b8; font-size:12px; 
+                   margin-bottom:12px;">
+          ${data.count} pending request(s)
+        </p>`;
+
+      data.leaves.forEach(leave => {
+        const item = document.createElement('div');
+        item.className = 'leave-item';
+
+        const startDate = leave.startDate 
+          ? new Date(leave.startDate)
+              .toLocaleDateString('en-IN')
+          : 'N/A';
+        const endDate = leave.endDate
+          ? new Date(leave.endDate)
+              .toLocaleDateString('en-IN')
+          : 'N/A';
+
+        item.innerHTML = `
+          <div class="leave-item-header">
+            <span class="leave-item-name">
+              ${leave.personName || 
+                'Employee ' + leave.personId || 'N/A'}
+            </span>
+            <span class="leave-item-type">
+              ${leave.absenceTypeName || 'Leave'}
+            </span>
+          </div>
+          <div class="leave-item-dates">
+            📅 ${startDate} → ${endDate}
+          </div>
+          <div class="leave-item-duration">
+            ⏱ ${leave.duration || 'N/A'} 
+            ${leave.uom || 'Hours'}
+          </div>
+        `;
+
+        item.addEventListener('click', () => {
+          currentLeaveApproval = leave;
+          showLeaveApprovalDetail(leave);
+        });
+
+        container.appendChild(item);
+      });
+
+    } else {
+      container.innerHTML = `
+        <div style="text-align:center; padding:40px; 
+                    color:#64748b;">
+          <div style="font-size:48px; margin-bottom:12px;">
+            ✅
+          </div>
+          <p>No pending leave approvals!</p>
+          <p style="font-size:12px; margin-top:4px;">
+            All leave requests have been processed.
+          </p>
+        </div>
+      `;
+    }
+
+  } catch (err) {
+    console.error('Fetch pending leaves error:', err);
+    container.innerHTML = 
+      '<p style="color:#ef4444; text-align:center; padding:20px;">Failed to load. Please try again.</p>';
+  }
+}
+
+function showLeaveApprovalDetail(leave) {
+  hideAllSteps();
+  document.getElementById('leave-approval-detail-box')
+    .style.display = 'block';
+
+  const startDate = leave.startDate
+    ? new Date(leave.startDate).toLocaleDateString('en-IN')
+    : 'N/A';
+  const endDate = leave.endDate
+    ? new Date(leave.endDate).toLocaleDateString('en-IN')
+    : 'N/A';
+
+  document.getElementById('leave-approval-detail-card')
+    .innerHTML = `
+    <div class="glass-card-row">
+      <span class="label">Employee</span>
+      <span class="value">
+        ${leave.personName || 'Employee ' + leave.personId}
+      </span>
+    </div>
+    <div class="glass-card-row">
+      <span class="label">Leave Type</span>
+      <span class="value">
+        ${leave.absenceTypeName || 'N/A'}
+      </span>
+    </div>
+    <div class="glass-card-row">
+      <span class="label">Start Date</span>
+      <span class="value">${startDate}</span>
+    </div>
+    <div class="glass-card-row">
+      <span class="label">End Date</span>
+      <span class="value">${endDate}</span>
+    </div>
+    <div class="glass-card-row">
+      <span class="label">Duration</span>
+      <span class="value">
+        ${leave.duration || 'N/A'} ${leave.uom || 'Hours'}
+      </span>
+    </div>
+    <div class="glass-card-row">
+      <span class="label">Status</span>
+      <span class="value" style="color:#f59e0b;">
+        Pending Approval
+      </span>
+    </div>
+  `;
+
+  // Approve button
+  document.getElementById('btn-approve-leave')
+    .onclick = () => processLeaveApproval('APPROVE');
+
+  // Reject button
+  document.getElementById('btn-reject-leave')
+    .onclick = () => processLeaveApproval('REJECT');
+}
+
+async function processLeaveApproval(action) {
+  if (!currentLeaveApproval) return;
+
+  const actionText = action === 'APPROVE' 
+    ? 'Approve' : 'Reject';
+
+  const confirmed = confirm(
+    `${actionText} leave for ${
+      currentLeaveApproval.personName || 
+      'this employee'
+    }?`
+  );
+  if (!confirmed) return;
+
+  const approveBtn = document.getElementById(
+    'btn-approve-leave'
+  );
+  const rejectBtn = document.getElementById(
+    'btn-reject-leave'
+  );
+
+  if (approveBtn) approveBtn.disabled = true;
+  if (rejectBtn) rejectBtn.disabled = true;
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/oracle/approveleave`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          absenceId: currentLeaveApproval.absenceId ||
+                     currentLeaveApproval.AbsenceEntryId,
+          action: action,
+          comments: `${actionText}d via Voice Assistant`
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showResult(true,
+        `✅ Leave ${action === 'APPROVE' 
+          ? 'approved' : 'rejected'} successfully!\n` +
+        `Employee: ${
+          currentLeaveApproval.personName || 
+          'Employee'
+        }\n` +
+        `Type: ${currentLeaveApproval.absenceTypeName}`
+      );
+    } else {
+      showResult(false,
+        data.error || `Failed to ${actionText} leave`
+      );
+    }
+
+  } catch (err) {
+    console.error('Leave approval error:', err);
+    showResult(false, 'Connection error. Please try again.');
+  }
+}
