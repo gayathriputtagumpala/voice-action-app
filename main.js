@@ -40,7 +40,7 @@ const COMPANY_ORACLE_URLS = {
   'dabiqy': 'https://fa-etaj-saasfademo1.ds-fa.oraclepdemos.com'
 };
 
-const DEFAULT_ORACLE_BASE_URL = 'https://eqjz.ds-fa.oraclepdemos.com';
+const DEFAULT_ORACLE_BASE_URL = 'https://fa-esll-saasfademo1.ds-fa.oraclepdemos.com';
 
 // Read optional company code from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
