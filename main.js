@@ -4054,7 +4054,8 @@ async function processLeaveApproval(action) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          absenceId: currentLeaveApproval.absenceId ||
+          absenceId: currentLeaveApproval.personAbsenceEntryId ||
+                     currentLeaveApproval.absenceId ||
                      currentLeaveApproval.AbsenceEntryId,
           action: action,
           comments: `${actionText}d via Voice Assistant`
