@@ -466,7 +466,11 @@ btnVoiceYes.addEventListener('click', async () => {
     if (appState.workflowStep === 1) {
         appState.person_number = appState.tempExtractedNumber;
         console.log("Confirmed Employee Person Number:", appState.person_number);
-        await fetchEmployeeDetails();
+        if (appState.currentAction === 'wellness_check') {
+            startWellnessAssessment();
+        } else {
+            await fetchEmployeeDetails();
+        }
     } else if (appState.workflowStep === 3) {
         appState.manager_person_number = appState.tempExtractedNumber;
         console.log("Confirmed Manager Person Number:", appState.manager_person_number);
@@ -1734,7 +1738,11 @@ window.searchByNumber = function() {
   
   if (appState.workflowStep === 1) {
     appState.person_number = num;
-    fetchEmployeeDetails();
+    if (appState.currentAction === 'wellness_check') {
+      startWellnessAssessment();
+    } else {
+      fetchEmployeeDetails();
+    }
   } else if (appState.workflowStep === 3) {
     appState.manager_person_number = num;
     fetchManagerDetails();
@@ -4116,37 +4124,44 @@ window.startWellnessCheck = function() {
   appState.currentAction = 'wellness_check';
   showAllTabs();
   
+  // Use the standard input flow
+  if (typeof resetApp === 'function') resetApp();
+  switchTab('screen-home');
+  const mainTitle = document.getElementById('main-title');
+  if (mainTitle) mainTitle.textContent = "Enter Employee Person Number";
+  
   // Hide all screens
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   
-  const startBox = document.getElementById('wellness-start-box');
-  if (startBox) {
-    startBox.classList.add('active');
-    startBox.style.display = 'block';
+  const homeScreen = document.getElementById('screen-home');
+  if (homeScreen) {
+    homeScreen.classList.add('active');
+    homeScreen.style.display = 'block';
   }
   
   // Hide other wellness boxes
-  ['wellness-actions', 'wellness-context-box', 'wellness-questions-box', 'wellness-results-box'].forEach(id => {
+  ['wellness-actions', 'wellness-context-box', 'wellness-questions-box', 'wellness-results-box', 'wellness-start-box'].forEach(id => {
     const el = document.getElementById(id);
     if(el) {
       el.classList.remove('active');
       el.style.display = 'none';
     }
   });
-
-  const input = document.getElementById('wellness-person-number');
-  if(input) input.value = '';
 }
 
 window.startWellnessAssessment = async function() {
-  const input = document.getElementById('wellness-person-number');
-  const num = input ? input.value.trim() : '';
+  const num = appState.person_number;
   if (!num) {
     alert("Please enter a valid Person Number.");
     return;
   }
   
-  appState.person_number = num;
+  // Hide the step 1 screen and show wellness contexts
+  const homeScreen = document.getElementById('screen-home');
+  if (homeScreen) {
+    homeScreen.classList.remove('active');
+    homeScreen.style.display = 'none';
+  }
   
   try {
     const startBox = document.getElementById('wellness-start-box');
