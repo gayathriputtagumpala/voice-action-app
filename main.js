@@ -4319,7 +4319,7 @@ window.showWellnessQuestion = function() {
     btn.style.textAlign = 'left';
     btn.style.padding = '16px';
     btn.style.boxShadow = 'none';
-    btn.textContent = opt.text;
+    btn.textContent = opt.label || opt.text;
     btn.onclick = () => selectWellnessAnswer(opt);
     qOptions.appendChild(btn);
   });
@@ -4330,8 +4330,8 @@ window.selectWellnessAnswer = function(opt) {
   wellnessAnswers.push({
     question: q.question,
     category: q.category,
-    selectedOption: opt.text,
-    score: opt.score
+    selectedOption: opt.label || opt.text,
+    value: opt.value || opt.score
   });
 
   wellnessCurrentQ++;
