@@ -4101,6 +4101,13 @@ let wellnessCurrentQ = 0;
 
 window.showWellnessActions = function() {
   hideAllHomeScreens();
+  ['wellness-start-box', 'wellness-context-box', 'wellness-questions-box', 'wellness-results-box'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+      el.classList.remove('active');
+      el.style.display = 'none';
+    }
+  });
   document.getElementById('wellness-actions').style.display = 'block';
   showOnlyHomeTab();
 }
@@ -4200,8 +4207,8 @@ window.showWellnessContext = function(context) {
         </span>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:14px; color:var(--text-secondary);">
-        <div><strong>Tenure:</strong> ${context.tenureYears.toFixed(1)} years</div>
-        <div><strong>Leaves YTD:</strong> ${context.leaveMetrics.totalDaysTaken} days</div>
+        <div><strong>Tenure:</strong> ${context.tenureYears != null ? Number(context.tenureYears).toFixed(1) : 'N/A'} years</div>
+        <div><strong>Leaves YTD:</strong> ${context.leaveMetrics ? context.leaveMetrics.totalDaysTaken : '0'} days</div>
         <div><strong>Department:</strong> ${context.departmentName}</div>
         <div><strong>Manager:</strong> ${context.managerName}</div>
       </div>
