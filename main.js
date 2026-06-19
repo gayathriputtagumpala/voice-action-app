@@ -4330,7 +4330,7 @@ window.selectWellnessAnswer = function(opt) {
   wellnessAnswers.push({
     question: q.question,
     category: q.category,
-    selectedOption: opt.label || opt.text,
+    answer: opt.label || opt.text,
     value: opt.value || opt.score
   });
 
