@@ -4367,7 +4367,10 @@ window.calculateWellnessScore = async function() {
 
     if(loadingEl) loadingEl.style.display = 'none';
 
-    if (!res.ok) throw new Error('Failed to calculate score');
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Failed to calculate score');
+    }
 
     const result = await res.json();
     showWellnessResults(result.report);
