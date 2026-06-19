@@ -188,6 +188,13 @@
               <div class="card-title">Change Business Unit</div>
               <div class="card-description">Update employee business unit</div>
             </div>
+
+            <div class="action-card active" onclick="showWellnessActions()">
+              <div class="card-badge badge-available">LIVE</div>
+              <div class="card-icon icon-purple" style="background:rgba(16,185,129,0.15);">💚</div>
+              <div class="card-title">Employee Wellness</div>
+              <div class="card-description">AI-powered wellness assessment and recommendations</div>
+            </div>
             
   </div>
 </div>
@@ -1164,6 +1171,158 @@
         </section>
 
       </div>
+      
+      <!-- Wellness Actions Section -->
+      <div id="wellness-actions" style="display:none;">
+        <div class="breadcrumb" style="margin-bottom: 20px; color: var(--text-muted); cursor: pointer; font-size: 14px;">
+          <span onclick="showHomeModules()">Home</span> › 
+          <span onclick="showHCMModules()">HCM</span> › 
+          Wellness
+        </div>
+        <h3 class="submodule-title" style="margin-bottom: 24px;">💚 Employee Wellness</h3>
+        <div class="action-grid">
+          <div class="action-card active"
+               onclick="startWellnessCheck()">
+            <div class="card-badge badge-available">LIVE</div>
+            <div class="card-icon-box"
+                 style="background:linear-gradient(135deg,#10b981,#059669)">
+              🧘
+            </div>
+            <div class="card-title">Wellness Check</div>
+            <div class="card-description">
+              AI-powered personalized wellness assessment
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wellness Screens -->
+      <!-- Wellness Step 1: Enter Person Number -->
+      <div id="wellness-start-box" class="screen" style="display:none;">
+        <h2 class="step-title">💚 Wellness Check</h2>
+        <p style="color:#64748b; font-size:13px; margin-bottom:20px;">
+          Enter employee person number to begin wellness assessment
+        </p>
+        <input type="text"
+               id="wellness-person-number"
+               class="person-input"
+               placeholder="Enter Person Number e.g. 1405">
+        <button class="search-btn"
+                onclick="startWellnessAssessment()"
+                style="margin-top:12px; 
+                       background:linear-gradient(135deg,#10b981,#059669);
+                       box-shadow:0 8px 24px rgba(16,185,129,0.3);">
+          🌟 Start Wellness Check
+        </button>
+        <button onclick="showWellnessActions()"
+                style="width:100%; padding:12px; margin-top:8px;
+                       background:transparent;
+                       border:1px solid rgba(255,255,255,0.1);
+                       border-radius:12px; color:#64748b;
+                       cursor:pointer; font-size:14px;">
+          ← Back
+        </button>
+      </div>
+
+      <!-- Wellness Step 2: Employee Context Card -->
+      <div id="wellness-context-box" class="screen" style="display:none;">
+        <h2 class="step-title">Employee Profile Loaded</h2>
+        <div id="wellness-context-card" 
+             class="glass-card"
+             style="margin-bottom:20px;">
+        </div>
+        <button class="search-btn"
+                id="wellness-start-questions-btn"
+                onclick="loadWellnessQuestions()"
+                style="background:linear-gradient(135deg,#10b981,#059669);">
+          Start Wellness Questions →
+        </button>
+      </div>
+
+      <!-- Wellness Step 3: Questions -->
+      <div id="wellness-questions-box" class="screen" style="display:none;">
+        <div id="wellness-progress-bar" 
+             style="height:4px; background:rgba(255,255,255,0.1);
+                    border-radius:2px; margin-bottom:20px;">
+          <div id="wellness-progress-fill"
+               style="height:100%; background:#10b981;
+                      border-radius:2px; transition:width 0.3s;
+                      width:0%;">
+          </div>
+        </div>
+        <p id="wellness-q-counter"
+           style="font-size:12px; color:#64748b; margin-bottom:8px;">
+          Question 1 of 6
+        </p>
+        <h2 class="step-title" id="wellness-question-text">
+        </h2>
+        <div id="wellness-options-container"
+             style="display:flex; flex-direction:column; 
+                    gap:12px; margin-top:24px;">
+        </div>
+      </div>
+
+      <!-- Wellness Step 4: Results -->
+      <div id="wellness-results-box" class="screen" style="display:none;">
+        <h2 class="step-title">Your Wellness Report</h2>
+        
+        <!-- Score Circle -->
+        <div style="text-align:center; margin:24px 0;">
+          <div id="wellness-score-circle"
+               style="width:120px; height:120px; border-radius:50%;
+                      display:inline-flex; align-items:center;
+                      justify-content:center; flex-direction:column;
+                      border:4px solid #10b981; margin:0 auto;">
+            <span id="wellness-score-number"
+                  style="font-size:36px; font-weight:800; color:#f1f5f9;">
+              0
+            </span>
+            <span style="font-size:11px; color:#64748b;">/ 100</span>
+          </div>
+          <div id="wellness-risk-badge"
+               style="margin-top:12px;">
+          </div>
+        </div>
+
+        <!-- Category Scores -->
+        <div id="wellness-categories" 
+             class="glass-card"
+             style="margin-bottom:16px;">
+        </div>
+
+        <!-- Insights -->
+        <div id="wellness-insights"
+             class="glass-card"
+             style="margin-bottom:16px;">
+        </div>
+
+        <!-- Recommendations -->
+        <div id="wellness-recommendations"
+             class="glass-card"
+             style="margin-bottom:16px;">
+        </div>
+
+        <!-- HR Actions -->
+        <div id="wellness-hr-actions"
+             style="display:none; margin-bottom:16px;">
+        </div>
+
+        <button class="search-btn"
+                onclick="startWellnessCheck()"
+                style="background:linear-gradient(135deg,#10b981,#059669);">
+          New Wellness Check
+        </button>
+
+        <button onclick="goHome()"
+                style="width:100%; padding:12px; margin-top:8px;
+                       background:transparent;
+                       border:1px solid rgba(255,255,255,0.1);
+                       border-radius:12px; color:#64748b;
+                       cursor:pointer; font-size:14px;">
+          ← Home
+        </button>
+      </div>
+
     </main>
     </div>
     <!-- WhatsApp Settings Modal -->

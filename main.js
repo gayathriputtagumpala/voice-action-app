@@ -1,5 +1,10 @@
 
-function hideAllHomeScreens() {}
+function hideAllHomeScreens() {
+  document.getElementById('core-hr-actions')?.style.setProperty('display', 'none');
+  document.getElementById('absence-actions')?.style.setProperty('display', 'none');
+  document.getElementById('procurement-actions')?.style.setProperty('display', 'none');
+  document.getElementById('wellness-actions')?.style.setProperty('display', 'none');
+}
 
 window.showHomeModules = function() {
   const chr = document.getElementById('core-hr-actions');
@@ -40,7 +45,7 @@ const COMPANY_ORACLE_URLS = {
   'dabiqy': 'https://fa-etaj-saasfademo1.ds-fa.oraclepdemos.com'
 };
 
-const DEFAULT_ORACLE_BASE_URL = 'https://fa-esll-saasfademo1.ds-fa.oraclepdemos.com';
+const DEFAULT_ORACLE_BASE_URL = 'https://eqjz.ds-fa.oraclepdemos.com';
 
 // Read optional company code from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
@@ -4086,3 +4091,340 @@ async function processLeaveApproval(action) {
     showResult(false, 'Connection error. Please try again.');
   }
 }
+
+// --- WELLNESS MODULE FUNCTIONS ---
+
+let wellnessContext = null;
+let wellnessQuestions = [];
+let wellnessAnswers = [];
+let wellnessCurrentQ = 0;
+
+window.showWellnessActions = function() {
+  hideAllHomeScreens();
+  document.getElementById('wellness-actions').style.display = 'block';
+  showOnlyHomeTab();
+}
+
+window.startWellnessCheck = function() {
+  appState.currentAction = 'wellness_check';
+  showAllTabs();
+  
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  
+  const startBox = document.getElementById('wellness-start-box');
+  if (startBox) {
+    startBox.classList.add('active');
+    startBox.style.display = 'block';
+  }
+  
+  // Hide other wellness boxes
+  ['wellness-context-box', 'wellness-questions-box', 'wellness-results-box'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+      el.classList.remove('active');
+      el.style.display = 'none';
+    }
+  });
+
+  const input = document.getElementById('wellness-person-number');
+  if(input) input.value = '';
+}
+
+window.startWellnessAssessment = async function() {
+  const input = document.getElementById('wellness-person-number');
+  const num = input ? input.value.trim() : '';
+  if (!num) {
+    alert("Please enter a valid Person Number.");
+    return;
+  }
+  
+  appState.person_number = num;
+  
+  try {
+    const startBox = document.getElementById('wellness-start-box');
+    if(startBox) startBox.style.display = 'none';
+    
+    let loadingEl = document.getElementById('wellness-loading');
+    if(!loadingEl) {
+      loadingEl = document.createElement('div');
+      loadingEl.id = 'wellness-loading';
+      loadingEl.className = 'screen active';
+      loadingEl.innerHTML = `<div style="text-align:center; padding:40px;"><div class="spinner" style="margin: 0 auto 16px;"></div><p style="color:var(--text-secondary);">Fetching Oracle HCM profile & calculating risk...</p></div>`;
+      document.getElementById('app').appendChild(loadingEl);
+    } else {
+      loadingEl.style.display = 'block';
+    }
+
+    const res = await fetch(`${API_BASE}/wellness/context?personNumber=${num}`, {
+      headers: {
+        'x-oracle-auth': appState.oracleAuth,
+        'x-oracle-url': appState.oracleUrl
+      }
+    });
+
+    loadingEl.style.display = 'none';
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to fetch context');
+    }
+
+    wellnessContext = await res.json();
+    showWellnessContext(wellnessContext);
+
+  } catch (error) {
+    console.error("Wellness Context Error:", error);
+    alert("Error: " + error.message);
+    startWellnessCheck(); 
+  }
+}
+
+window.showWellnessContext = function(context) {
+  const contextBox = document.getElementById('wellness-context-box');
+  const contextCard = document.getElementById('wellness-context-card');
+  
+  if(contextBox && contextCard) {
+    contextBox.style.display = 'block';
+    contextBox.classList.add('active');
+    
+    let riskColor = '#10b981'; 
+    if(context.riskLevel === 'Medium') riskColor = '#f59e0b';
+    if(context.riskLevel === 'High') riskColor = '#ef4444';
+
+    contextCard.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:18px;">${context.displayName}</h3>
+        <span style="background:${riskColor}20; color:${riskColor}; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:bold;">
+          ${context.riskLevel} Risk Profile
+        </span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:14px; color:var(--text-secondary);">
+        <div><strong>Tenure:</strong> ${context.tenureYears.toFixed(1)} years</div>
+        <div><strong>Leaves YTD:</strong> ${context.leaveMetrics.totalDaysTaken} days</div>
+        <div><strong>Department:</strong> ${context.departmentName}</div>
+        <div><strong>Manager:</strong> ${context.managerName}</div>
+      </div>
+    `;
+  }
+}
+
+window.loadWellnessQuestions = async function() {
+  const contextBox = document.getElementById('wellness-context-box');
+  if(contextBox) {
+    contextBox.style.display = 'none';
+    contextBox.classList.remove('active');
+  }
+  
+  try {
+    let loadingEl = document.getElementById('wellness-loading');
+    if(loadingEl) {
+      loadingEl.innerHTML = `<div style="text-align:center; padding:40px;"><div class="spinner" style="margin: 0 auto 16px;"></div><p style="color:var(--text-secondary);">Generating personalized questions via Gemini AI...</p></div>`;
+      loadingEl.style.display = 'block';
+    }
+
+    const res = await fetch(`${API_BASE}/wellness/questions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-oracle-auth': appState.oracleAuth,
+        'x-oracle-url': appState.oracleUrl
+      },
+      body: JSON.stringify({ context: wellnessContext })
+    });
+
+    if(loadingEl) loadingEl.style.display = 'none';
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to generate questions');
+    }
+
+    const data = await res.json();
+    wellnessQuestions = data.questions;
+    wellnessAnswers = [];
+    wellnessCurrentQ = 0;
+
+    const qBox = document.getElementById('wellness-questions-box');
+    if(qBox) {
+      qBox.style.display = 'block';
+      qBox.classList.add('active');
+    }
+    
+    showWellnessQuestion();
+
+  } catch (error) {
+    console.error("Questions Error:", error);
+    alert("Error: " + error.message);
+    if(contextBox) {
+      contextBox.style.display = 'block';
+      contextBox.classList.add('active');
+    }
+  }
+}
+
+window.showWellnessQuestion = function() {
+  if (wellnessCurrentQ >= wellnessQuestions.length) {
+    calculateWellnessScore();
+    return;
+  }
+
+  const qBox = document.getElementById('wellness-questions-box');
+  const qText = document.getElementById('wellness-question-text');
+  const qOptions = document.getElementById('wellness-options-container');
+  const qCounter = document.getElementById('wellness-q-counter');
+  const pFill = document.getElementById('wellness-progress-fill');
+
+  const q = wellnessQuestions[wellnessCurrentQ];
+
+  qCounter.textContent = `Question ${wellnessCurrentQ + 1} of ${wellnessQuestions.length} (${q.category})`;
+  pFill.style.width = `${(wellnessCurrentQ / wellnessQuestions.length) * 100}%`;
+  qText.textContent = q.question;
+
+  qOptions.innerHTML = '';
+  q.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'search-btn';
+    btn.style.background = 'rgba(255,255,255,0.05)';
+    btn.style.border = '1px solid rgba(255,255,255,0.1)';
+    btn.style.color = '#f8fafc';
+    btn.style.textAlign = 'left';
+    btn.style.padding = '16px';
+    btn.style.boxShadow = 'none';
+    btn.textContent = opt.text;
+    btn.onclick = () => selectWellnessAnswer(opt);
+    qOptions.appendChild(btn);
+  });
+}
+
+window.selectWellnessAnswer = function(opt) {
+  const q = wellnessQuestions[wellnessCurrentQ];
+  wellnessAnswers.push({
+    question: q.question,
+    category: q.category,
+    selectedOption: opt.text,
+    score: opt.score
+  });
+
+  wellnessCurrentQ++;
+  showWellnessQuestion();
+}
+
+window.calculateWellnessScore = async function() {
+  const qBox = document.getElementById('wellness-questions-box');
+  if(qBox) {
+    qBox.style.display = 'none';
+    qBox.classList.remove('active');
+  }
+
+  try {
+    let loadingEl = document.getElementById('wellness-loading');
+    if(loadingEl) {
+      loadingEl.innerHTML = `<div style="text-align:center; padding:40px;"><div class="spinner" style="margin: 0 auto 16px;"></div><p style="color:var(--text-secondary);">Analyzing responses via Gemini AI...</p></div>`;
+      loadingEl.style.display = 'block';
+    }
+
+    const res = await fetch(`${API_BASE}/wellness/score`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-oracle-auth': appState.oracleAuth,
+        'x-oracle-url': appState.oracleUrl
+      },
+      body: JSON.stringify({
+        context: wellnessContext,
+        answers: wellnessAnswers
+      })
+    });
+
+    if(loadingEl) loadingEl.style.display = 'none';
+
+    if (!res.ok) throw new Error('Failed to calculate score');
+
+    const result = await res.json();
+    showWellnessResults(result.report);
+
+  } catch (error) {
+    console.error("Score Error:", error);
+    alert("Error: " + error.message);
+  }
+}
+
+window.showWellnessResults = function(report) {
+  const rBox = document.getElementById('wellness-results-box');
+  if(rBox) {
+    rBox.style.display = 'block';
+    rBox.classList.add('active');
+  }
+
+  document.getElementById('wellness-score-number').textContent = report.overallScore;
+  
+  let riskColor = '#10b981';
+  let badgeClass = 'badge success';
+  if(report.riskLevel === 'Medium') { riskColor = '#f59e0b'; badgeClass = 'badge warning'; }
+  if(report.riskLevel === 'High') { riskColor = '#ef4444'; badgeClass = 'badge danger'; }
+
+  document.getElementById('wellness-score-circle').style.borderColor = riskColor;
+  
+  const riskBadge = document.getElementById('wellness-risk-badge');
+  riskBadge.className = badgeClass;
+  riskBadge.textContent = `${report.riskLevel} Risk`;
+  riskBadge.style.fontSize = '14px';
+
+  const catDiv = document.getElementById('wellness-categories');
+  catDiv.innerHTML = '<h4 style="margin:0 0 12px 0;">Category Breakdown</h4>';
+  Object.keys(report.categoryScores).forEach(cat => {
+    const val = report.categoryScores[cat];
+    let fillClass = val > 75 ? '#10b981' : (val > 50 ? '#f59e0b' : '#ef4444');
+    catDiv.innerHTML += `
+      <div style="margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+          <span>${cat}</span>
+          <span>${val}%</span>
+        </div>
+        <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px;">
+          <div style="height:100%; width:${val}%; background:${fillClass}; border-radius:3px;"></div>
+        </div>
+      </div>
+    `;
+  });
+
+  const insDiv = document.getElementById('wellness-insights');
+  insDiv.innerHTML = '<h4 style="margin:0 0 12px 0;">AI Insights</h4>';
+  const insUl = document.createElement('ul');
+  insUl.style.paddingLeft = '20px';
+  insUl.style.margin = '0';
+  insUl.style.fontSize = '13px';
+  report.insights.forEach(i => {
+    insUl.innerHTML += `<li style="margin-bottom:6px; color:var(--text-secondary);">${i}</li>`;
+  });
+  insDiv.appendChild(insUl);
+
+  const recDiv = document.getElementById('wellness-recommendations');
+  recDiv.innerHTML = '<h4 style="margin:0 0 12px 0;">Recommendations</h4>';
+  const recUl = document.createElement('ul');
+  recUl.style.paddingLeft = '20px';
+  recUl.style.margin = '0';
+  recUl.style.fontSize = '13px';
+  report.recommendations.forEach(r => {
+    recUl.innerHTML += `<li style="margin-bottom:6px; color:var(--text-secondary);">${r}</li>`;
+  });
+  recDiv.appendChild(recUl);
+
+  const hrDiv = document.getElementById('wellness-hr-actions');
+  if (report.suggestedHRActions && report.suggestedHRActions.length > 0) {
+    hrDiv.style.display = 'block';
+    hrDiv.innerHTML = '<h4 style="margin:0 0 12px 0; color:#f59e0b;">Suggested HR Actions</h4>';
+    report.suggestedHRActions.forEach(act => {
+      hrDiv.innerHTML += `
+        <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); padding:12px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:13px; color:#fcd34d;">${act}</span>
+          <button class="btn btn-secondary small">Initiate</button>
+        </div>
+      `;
+    });
+  } else {
+    hrDiv.style.display = 'none';
+  }
+}
+
