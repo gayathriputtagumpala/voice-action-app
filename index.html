@@ -1173,16 +1173,17 @@
       </div>
       
       <!-- Wellness Actions Section -->
-      <div id="wellness-actions" style="display:none;">
+      <!-- Wellness Actions Section -->
+      <div id="wellness-actions" class="screen" style="display:none;">
         <div class="breadcrumb" style="margin-bottom: 20px; color: var(--text-muted); cursor: pointer; font-size: 14px;">
           <span onclick="showHomeModules()">Home</span> › 
           <span onclick="showHCMModules()">HCM</span> › 
           Wellness
         </div>
-        <h3 class="submodule-title" style="margin-bottom: 24px;">💚 Employee Wellness</h3>
-        <div class="action-grid">
+        <h3 class="submodule-title" style="margin-bottom: 24px; text-align: center;">💚 Employee Wellness</h3>
+        <div class="action-grid" style="display: flex; justify-content: center;">
           <div class="action-card active"
-               onclick="startWellnessCheck()">
+               onclick="startWellnessCheck()" style="max-width: 300px; width: 100%;">
             <div class="card-badge badge-available">LIVE</div>
             <div class="card-icon-box"
                  style="background:linear-gradient(135deg,#10b981,#059669)">
@@ -1199,29 +1200,32 @@
       <!-- Wellness Screens -->
       <!-- Wellness Step 1: Enter Person Number -->
       <div id="wellness-start-box" class="screen" style="display:none;">
-        <h2 class="step-title">💚 Wellness Check</h2>
-        <p style="color:#64748b; font-size:13px; margin-bottom:20px;">
-          Enter employee person number to begin wellness assessment
-        </p>
-        <input type="text"
-               id="wellness-person-number"
-               class="person-input"
-               placeholder="Enter Person Number e.g. 1405">
-        <button class="search-btn"
-                onclick="startWellnessAssessment()"
-                style="margin-top:12px; 
-                       background:linear-gradient(135deg,#10b981,#059669);
-                       box-shadow:0 8px 24px rgba(16,185,129,0.3);">
-          🌟 Start Wellness Check
-        </button>
-        <button onclick="showWellnessActions()"
-                style="width:100%; padding:12px; margin-top:8px;
-                       background:transparent;
-                       border:1px solid rgba(255,255,255,0.1);
-                       border-radius:12px; color:#64748b;
-                       cursor:pointer; font-size:14px;">
-          ← Back
-        </button>
+        <div class="employee-card" style="max-width: 400px; margin: 0 auto; text-align: center;">
+          <h2 class="step-title" style="justify-content: center;">💚 Wellness Check</h2>
+          <p style="color:#64748b; font-size:13px; margin-bottom:20px;">
+            Enter employee person number to begin wellness assessment
+          </p>
+          <input type="text"
+                 id="wellness-person-number"
+                 class="person-input"
+                 placeholder="Enter Person Number e.g. 1405"
+                 style="text-align: center;">
+          <button class="search-btn"
+                  onclick="startWellnessAssessment()"
+                  style="margin-top:12px; 
+                         background:linear-gradient(135deg,#10b981,#059669);
+                         box-shadow:0 8px 24px rgba(16,185,129,0.3);">
+            🌟 Start Wellness Check
+          </button>
+          <button onclick="showWellnessActions()"
+                  style="width:100%; padding:12px; margin-top:8px;
+                         background:transparent;
+                         border:1px solid rgba(255,255,255,0.1);
+                         border-radius:12px; color:#64748b;
+                         cursor:pointer; font-size:14px;">
+            ← Back
+          </button>
+        </div>
       </div>
 
       <!-- Wellness Step 2: Employee Context Card -->
