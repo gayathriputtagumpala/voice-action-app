@@ -4198,7 +4198,7 @@ window.startWellnessAssessment = async function() {
       throw new Error(err.error || 'Failed to fetch context');
     }
 
-    wellnessContext = await res.json();
+    wellnessContext = (await res.json()).context;
     showWellnessContext(wellnessContext);
 
   } catch (error) {
@@ -4217,21 +4217,21 @@ window.showWellnessContext = function(context) {
     contextBox.classList.add('active');
     
     let riskColor = '#10b981'; 
-    if(context.riskLevel === 'Medium') riskColor = '#f59e0b';
-    if(context.riskLevel === 'High') riskColor = '#ef4444';
+    if(context.AbsenceRisk === 'Medium') riskColor = '#f59e0b';
+    if(context.AbsenceRisk === 'High') riskColor = '#ef4444';
 
     contextCard.innerHTML = `
       <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-        <h3 style="margin:0; font-size:18px;">${context.displayName}</h3>
+        <h3 style="margin:0; font-size:18px;">${context.DisplayName}</h3>
         <span style="background:${riskColor}20; color:${riskColor}; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:bold;">
-          ${context.riskLevel} Risk Profile
+          ${context.AbsenceRisk} Risk Profile
         </span>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:14px; color:var(--text-secondary);">
-        <div><strong>Tenure:</strong> ${context.tenureYears != null ? Number(context.tenureYears).toFixed(1) : 'N/A'} years</div>
-        <div><strong>Leaves YTD:</strong> ${context.leaveMetrics ? context.leaveMetrics.totalDaysTaken : '0'} days</div>
-        <div><strong>Department:</strong> ${context.departmentName}</div>
-        <div><strong>Manager:</strong> ${context.managerName}</div>
+        <div><strong>Tenure:</strong> ${context.TenureMonths != null ? (context.TenureMonths / 12).toFixed(1) : 'N/A'} years</div>
+        <div><strong>Leaves YTD:</strong> ${context.TotalAbsenceDays != null ? context.TotalAbsenceDays : '0'} days</div>
+        <div><strong>Department:</strong> ${context.Department}</div>
+        <div><strong>Manager:</strong> ${context.Manager}</div>
       </div>
     `;
   }
