@@ -4121,11 +4121,12 @@ window.showWellnessActions = function() {
 }
 
 window.startWellnessCheck = function() {
-  appState.currentAction = 'wellness_check';
   showAllTabs();
   
   // Use the standard input flow
   if (typeof resetApp === 'function') resetApp();
+  
+  appState.currentAction = 'wellness_check';
   switchTab('screen-home');
   const mainTitle = document.getElementById('main-title');
   if (mainTitle) mainTitle.textContent = "Enter Employee Person Number";
