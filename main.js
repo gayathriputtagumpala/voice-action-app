@@ -4126,7 +4126,7 @@ window.startWellnessCheck = function() {
   }
   
   // Hide other wellness boxes
-  ['wellness-context-box', 'wellness-questions-box', 'wellness-results-box'].forEach(id => {
+  ['wellness-actions', 'wellness-context-box', 'wellness-questions-box', 'wellness-results-box'].forEach(id => {
     const el = document.getElementById(id);
     if(el) {
       el.classList.remove('active');
