@@ -1614,11 +1614,16 @@ document.getElementById('btn-clear-log').addEventListener('click', () => {
 // Reset App State
 function resetApp() {
   console.log("Resetting app state...");
+  const preservedAuth = appState.oracleAuth;
+  const preservedUrl = appState.oracleUrl;
+  
   appState = {
     workflowStep: 1,
     person_number: null,
     manager_person_number: null,
     language_code: langSelect.value,
+    oracleAuth: preservedAuth,
+    oracleUrl: preservedUrl,
     encodedPersonId: null,
     WorkRelationshipId: null,
     encodedAssignmentId: null,
