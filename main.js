@@ -4404,8 +4404,8 @@ window.showWellnessResults = function(report) {
 
   const catDiv = document.getElementById('wellness-categories');
   catDiv.innerHTML = '<h4 style="margin:0 0 12px 0;">Category Breakdown</h4>';
-  Object.keys(report.categoryScores).forEach(cat => {
-    const val = report.categoryScores[cat];
+  Object.keys(report.categories || {}).forEach(cat => {
+    const val = report.categories[cat].score;
     let fillClass = val > 75 ? '#10b981' : (val > 50 ? '#f59e0b' : '#ef4444');
     catDiv.innerHTML += `
       <div style="margin-bottom:8px;">
@@ -4437,16 +4437,16 @@ window.showWellnessResults = function(report) {
   recUl.style.paddingLeft = '20px';
   recUl.style.margin = '0';
   recUl.style.fontSize = '13px';
-  report.recommendations.forEach(r => {
+  Object.values(report.recommendations || {}).forEach(r => {
     recUl.innerHTML += `<li style="margin-bottom:6px; color:var(--text-secondary);">${r}</li>`;
   });
   recDiv.appendChild(recUl);
 
   const hrDiv = document.getElementById('wellness-hr-actions');
-  if (report.suggestedHRActions && report.suggestedHRActions.length > 0) {
+  if (report.hrActions && report.hrActions.actions && report.hrActions.actions.length > 0) {
     hrDiv.style.display = 'block';
     hrDiv.innerHTML = '<h4 style="margin:0 0 12px 0; color:#f59e0b;">Suggested HR Actions</h4>';
-    report.suggestedHRActions.forEach(act => {
+    report.hrActions.actions.forEach(act => {
       hrDiv.innerHTML += `
         <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); padding:12px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size:13px; color:#fcd34d;">${act}</span>
