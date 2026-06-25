@@ -4463,8 +4463,18 @@ window.showWellnessResults = function(report) {
 window.initiateHRAction = function(btn, actionName) {
   btn.textContent = "Initiating...";
   btn.disabled = true;
+  
+  const empName = document.getElementById('emp-name')?.textContent || 'Employee';
+  const empNo = document.getElementById('emp-no')?.textContent || '000';
+  
+  const subject = encodeURIComponent(`Wellness Follow-up: HR Action Required`);
+  const body = encodeURIComponent(`Hi ${empName},\n\nFollowing up on your recent wellness check, we would like to initiate the following action to support you:\n\n- ${actionName}\n\nPlease let us know when you might be available to discuss this, or if you have any immediate questions.\n\nBest regards,\nHR Team`);
+  
+  // Open default email client
+  window.location.href = `mailto:employee_${empNo}@example.com?subject=${subject}&body=${body}`;
+
   setTimeout(() => {
-    btn.textContent = "Initiated ✓";
+    btn.textContent = "Email Drafted ✓";
     btn.style.background = "#059669";
     btn.style.borderColor = "#059669";
     btn.style.color = "#fff";
