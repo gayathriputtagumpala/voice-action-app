@@ -4470,8 +4470,12 @@ window.initiateHRAction = function(btn, actionName) {
   const subject = encodeURIComponent(`Wellness Follow-up: HR Action Required`);
   const body = encodeURIComponent(`Hi ${empName},\n\nFollowing up on your recent wellness check, we would like to initiate the following action to support you:\n\n- ${actionName}\n\nPlease let us know when you might be available to discuss this, or if you have any immediate questions.\n\nBest regards,\nHR Team`);
   
+  const empEmail = (typeof wellnessContext !== 'undefined' && wellnessContext.WorkEmail) 
+    ? wellnessContext.WorkEmail 
+    : `employee_${empNo}@example.com`;
+
   // Open default email client
-  window.location.href = `mailto:employee_${empNo}@example.com?subject=${subject}&body=${body}`;
+  window.location.href = `mailto:${empEmail}?subject=${subject}&body=${body}`;
 
   setTimeout(() => {
     btn.textContent = "Email Drafted ✓";
