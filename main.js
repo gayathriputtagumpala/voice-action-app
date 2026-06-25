@@ -4447,15 +4447,27 @@ window.showWellnessResults = function(report) {
     hrDiv.style.display = 'block';
     hrDiv.innerHTML = '<h4 style="margin:0 0 12px 0; color:#f59e0b;">Suggested HR Actions</h4>';
     report.hrActions.actions.forEach(act => {
+      const safeAct = act.replace(/'/g, "\\'").replace(/"/g, '&quot;');
       hrDiv.innerHTML += `
         <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); padding:12px; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size:13px; color:#fcd34d;">${act}</span>
-          <button class="btn btn-secondary small">Initiate</button>
+          <button class="btn btn-secondary small" onclick="initiateHRAction(this, '${safeAct}')">Initiate</button>
         </div>
       `;
     });
   } else {
     hrDiv.style.display = 'none';
   }
+}
+
+window.initiateHRAction = function(btn, actionName) {
+  btn.textContent = "Initiating...";
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = "Initiated ✓";
+    btn.style.background = "#059669";
+    btn.style.borderColor = "#059669";
+    btn.style.color = "#fff";
+  }, 800);
 }
 
