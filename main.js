@@ -4156,11 +4156,13 @@ window.startWellnessCheck = function() {
 }
 
 window.startWellnessAssessment = async function() {
-  const num = appState.person_number;
+  const inputEl = document.getElementById('wellness-person-number');
+  const num = (inputEl && inputEl.value.trim()) ? inputEl.value.trim() : appState.person_number;
   if (!num) {
     alert("Please enter a valid Person Number.");
     return;
   }
+  appState.person_number = num;
   
   // Hide the step 1 screen and show wellness contexts
   const homeScreen = document.getElementById('screen-home');
@@ -4251,6 +4253,7 @@ window.loadWellnessQuestions = async function() {
       loadingEl.style.display = 'block';
     }
 
+    const healthProblem = document.getElementById('wellness-health-problem')?.value || '';
     const res = await fetch(`${API_BASE}/wellness/questions`, {
       method: 'POST',
       headers: {
@@ -4258,7 +4261,7 @@ window.loadWellnessQuestions = async function() {
         'x-oracle-auth': appState.oracleAuth,
         'x-oracle-url': appState.oracleUrl
       },
-      body: JSON.stringify({ context: wellnessContext })
+      body: JSON.stringify({ context: wellnessContext, healthProblem })
     });
 
     if(loadingEl) loadingEl.style.display = 'none';
@@ -4374,6 +4377,27 @@ window.calculateWellnessScore = async function() {
 
     const result = await res.json();
     showWellnessResults(result.report);
+    
+    // Automatically send email
+    try {
+      await fetch(`${API_BASE}/wellness/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: wellnessContext.WorkEmail,
+          name: wellnessContext.DisplayName,
+          score: result.report.overallScore,
+          risk: result.report.riskLevel,
+          healthProblem: document.getElementById('wellness-health-problem')?.value || ''
+        })
+      });
+      // Try to show a toast message if the function exists
+      if (typeof showToast === 'function') {
+        showToast("Wellness report email sent successfully!");
+      }
+    } catch (e) {
+      console.error("Failed to send email:", e);
+    }
 
   } catch (error) {
     console.error("Score Error:", error);
