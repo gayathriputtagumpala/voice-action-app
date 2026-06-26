@@ -4313,7 +4313,9 @@ window.showWellnessQuestion = function() {
   qText.textContent = q.question;
 
   qOptions.innerHTML = '';
-  q.options.forEach(opt => {
+  const optionsList = Array.isArray(q.options) ? q.options : (Array.isArray(q.answers) ? q.answers : [{"label": "Yes", "value": 1}, {"label": "No", "value": 2}]);
+  
+  optionsList.forEach((opt, index) => {
     const btn = document.createElement('button');
     btn.className = 'search-btn';
     btn.style.background = 'rgba(255,255,255,0.05)';
@@ -4322,8 +4324,18 @@ window.showWellnessQuestion = function() {
     btn.style.textAlign = 'left';
     btn.style.padding = '16px';
     btn.style.boxShadow = 'none';
-    btn.textContent = opt.label || opt.text;
-    btn.onclick = () => selectWellnessAnswer(opt);
+    
+    let label = '';
+    let val = index + 1;
+    if (typeof opt === 'string') {
+      label = opt;
+    } else if (opt) {
+      label = opt.label || opt.text || opt.answer || JSON.stringify(opt);
+      val = opt.value !== undefined ? opt.value : (opt.score !== undefined ? opt.score : val);
+    }
+    
+    btn.textContent = label;
+    btn.onclick = () => selectWellnessAnswer({ label, value: val });
     qOptions.appendChild(btn);
   });
 }
@@ -4333,8 +4345,8 @@ window.selectWellnessAnswer = function(opt) {
   wellnessAnswers.push({
     question: q.question,
     category: q.category,
-    answer: opt.label || opt.text,
-    value: opt.value || opt.score
+    answer: opt.label || opt.text || opt,
+    value: opt.value || opt.score || 1
   });
 
   wellnessCurrentQ++;
@@ -4371,11 +4383,12 @@ window.calculateWellnessScore = async function() {
     if(loadingEl) loadingEl.style.display = 'none';
 
     if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.error || 'Failed to calculate score');
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to calculate score');
     }
 
     const result = await res.json();
+    if (!result.report) throw new Error("Invalid report data received");
     showWellnessResults(result.report);
     
     // Automatically send email
