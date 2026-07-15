@@ -16,9 +16,24 @@ window.showHomeModules = function() {
 }
 
 window.showHCMModules = function() {}
-window.showCoreHRActions = function() {}
-window.showAbsenceActions = function() {}
-window.showProcurementActions = function() {}
+window.showCoreHRActions = function() {
+  hideActionTabs();
+  switchTab('screen-dashboard');
+  const chr = document.getElementById('core-hr-actions');
+  if (chr) chr.style.display = 'block';
+}
+window.showAbsenceActions = function() {
+  hideActionTabs();
+  switchTab('screen-absence');
+  const abs = document.getElementById('absence-actions');
+  if (abs) abs.style.display = 'block';
+}
+window.showProcurementActions = function() {
+  hideActionTabs();
+  switchTab('screen-procurement');
+  const pro = document.getElementById('procurement-actions');
+  if (pro) pro.style.display = 'block';
+}
 
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
   if (!window.trustedTypes.defaultPolicy) {
