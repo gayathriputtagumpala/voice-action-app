@@ -66,7 +66,7 @@
         </p>
       </div>
     </div>
-    <div id="main-app" style="display:none; height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: var(--bg-primary);">
+    <div id="main-app" style="display:none; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg-primary);">
       <!-- Hidden Original Tabs for JS compatibility -->
       <nav class="tabs tab-bar" style="display:none;">
         <button class="tab-btn active" data-target="screen-dashboard">🏢 Core HR</button>
@@ -80,9 +80,9 @@
       </nav>
 
       <!-- Top Header Bar -->
-      <header class="top-header" style="height: 72px; display: flex; justify-content: space-between; align-items: center; padding: 0 32px; background: #ffffff; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); z-index: 20;">
+      <header class="top-header" style="height: 80px; display: flex; justify-content: space-between; align-items: center; padding: 0 32px; background: #e0f2fe; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); z-index: 20;">
         <div class="header-left" style="display: flex; align-items: center;">
-          <img src="/logo.png" alt="Quadrobay" class="company-logo" style="height: 32px; width: auto;">
+          <img src="/logo.png" alt="Quadrobay" class="company-logo" style="height: 52px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); background: #171615; padding: 8px 16px; border-radius: 8px;">
         </div>
         <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
           <span id="user-badge" class="user-badge" style="background: var(--bg-primary); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-primary); border: 1px solid var(--border-color);"></span>
@@ -93,9 +93,9 @@
       </header>
 
       <!-- Modules Nav Bar -->
-      <div class="modules-nav-bar" style="background: #ffffff; border-bottom: 1px solid var(--border-color); padding: 12px 32px; display: flex; align-items: center; gap: 16px; z-index: 10;">
-        <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-secondary); margin: 0; font-weight: 700;">Modules:</h3>
-        <select id="module-sidebar-select" class="person-input" style="width: 240px; font-size: 14px; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); cursor: pointer; outline: none; letter-spacing: normal;" onchange="window.switchModule(this.value)">
+      <div class="modules-nav-bar" style="background: #eff6ff; border-bottom: 1px solid var(--border-color); padding: 16px 32px; display: flex; align-items: center; gap: 20px; z-index: 10;">
+        <h3 style="font-size: 16px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-secondary); margin: 0; font-weight: 700;">Modules:</h3>
+        <select id="module-sidebar-select" class="person-input" style="width: 320px; font-size: 17px; padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); cursor: pointer; outline: none; letter-spacing: normal; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onchange="window.switchModule(this.value)">
           <option value="screen-dashboard">🏢 Core HR</option>
           <option value="screen-absence">🏖️ Absence Management</option>
           <option value="screen-procurement">📦 Procurement</option>
@@ -103,7 +103,7 @@
       </div>
 
       <!-- Scrollable App Area -->
-      <main id="app" class="app-container main-card card container wrapper" style="flex: 1; overflow-y: auto; padding: 32px; margin: 0; max-width: 100%; border-radius: 0; background: transparent; box-shadow: none;">
+      <main id="app" class="app-container main-card card container wrapper" style="flex: 1; padding: 40px 32px; margin: 0; max-width: 100%; border-radius: 0; background: transparent; box-shadow: none;">
         <div class="tab-content-container tab-content">
         
         <!-- DASHBOARD (Home) -->

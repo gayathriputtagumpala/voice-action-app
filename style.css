@@ -1,12 +1,12 @@
 /* Oracle Fusion Redwood Design System Colors */
 :root {
-  --bg-primary: #f8fafc; /* Beautiful soft slate background */
+  --bg-primary: #fffbf0; /* Beautiful soft light cream background */
   --bg-card: #ffffff; /* White cards */
   --bg-card-hover: rgba(59, 130, 246, 0.04); /* Soft blue hover */
   --border-color: rgba(15, 23, 42, 0.08); /* Crisp subtle borders */
   --text-primary: #0f172a; /* Slate 900 */
   --text-secondary: #64748b; /* Slate 500 */
-  --header-bg: #ffffff; /* White header */
+  --header-bg: #e0f2fe; /* Light blue header */
   
   --accent-color: #3b82f6; /* Modern Blue Accent */
   --accent-hover: #2563eb;
