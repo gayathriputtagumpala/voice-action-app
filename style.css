@@ -1,16 +1,16 @@
 /* Oracle Fusion Redwood Design System Colors */
 :root {
-  --bg-primary: #fff5f7; /* Very light pink background */
-  --bg-card: #ffffff; /* White cards for clean contrast */
-  --bg-card-hover: rgba(236, 72, 153, 0.04); /* Pink hover tint */
-  --border-color: rgba(236, 72, 153, 0.15); /* Soft pink border */
-  --text-primary: #4a3b42; /* Soft dark mauve for text */
-  --text-secondary: #8c7a83; /* Muted mauve for secondary text */
+  --bg-primary: #f8fafc; /* Beautiful soft slate background */
+  --bg-card: #ffffff; /* White cards */
+  --bg-card-hover: rgba(59, 130, 246, 0.04); /* Soft blue hover */
+  --border-color: rgba(15, 23, 42, 0.08); /* Crisp subtle borders */
+  --text-primary: #0f172a; /* Slate 900 */
+  --text-secondary: #64748b; /* Slate 500 */
   --header-bg: #ffffff; /* White header */
   
-  --accent-color: #ec4899; /* Vibrant Pink Accent */
-  --accent-hover: #db2777;
-  --accent-light: rgba(236, 72, 153, 0.1);
+  --accent-color: #3b82f6; /* Modern Blue Accent */
+  --accent-hover: #2563eb;
+  --accent-light: rgba(59, 130, 246, 0.1);
   
   --success-color: #10b981;
   --success-light: rgba(16, 185, 129, 0.1);

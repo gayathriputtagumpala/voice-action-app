@@ -66,38 +66,8 @@
         </p>
       </div>
     </div>
-    <div id="main-app" style="display:none;">
-      <!-- Background Orbs -->
-    <div class="bg-orb orb-purple"></div>
-    <div class="bg-orb orb-cyan"></div>
-
-    <!-- Top Header Bar -->
-    <header class="top-header">
-      <div class="header-left">
-        <img src="/logo.png" alt="Quadrobay" class="company-logo">
-      </div>
-      <div class="header-right" style="display: flex; align-items: center;">
-        <span id="user-badge" class="user-badge"></span>
-        <button class="theme-toggle" onclick="openWhatsAppSettings()" 
-                title="WhatsApp Bot Settings" style="font-size: 16px;">💬</button>
-        <button class="theme-toggle" onclick="logout()" 
-                title="Logout">🚪</button>
-        <button id="themeToggle" class="theme-toggle">🌙</button>
-        <span class="version-badge">Voice Assistant v1.0</span>
-      </div>
-    </header>
-
-    <div class="main-layout" style="display:flex; flex:1; height:calc(100vh - 80px);">
-      <aside class="sidebar" style="width:280px; background:var(--bg-card); border-right:1px solid var(--border-color); padding:24px; display:flex; flex-direction:column; gap:16px;">
-        <h3 style="font-size:18px; margin:0; color:var(--text-primary);">Modules</h3>
-        <select id="module-sidebar-select" class="person-input" style="width:100%; font-size:14px; padding:12px; letter-spacing:normal;" onchange="window.switchModule(this.value)">
-          <option value="screen-dashboard">🏢 Core HR</option>
-          <option value="screen-absence">🏖️ Absence</option>
-          <option value="screen-procurement">📦 Procurement</option>
-        </select>
-      </aside>
-      
-      <!-- Navigation Tabs (Hidden initially) -->
+    <div id="main-app" style="display:none; height: 100vh; overflow: hidden;">
+      <!-- Hidden Original Tabs for JS compatibility -->
       <nav class="tabs tab-bar" style="display:none;">
         <button class="tab-btn active" data-target="screen-dashboard">🏢 Core HR</button>
         <button class="tab-btn" data-target="screen-absence">🏖️ Absence</button>
@@ -109,9 +79,43 @@
         <button class="tab-btn" data-target="screen-audit">📜 Logs</button>
       </nav>
 
-      <!-- Main App Container -->
-      <main id="app" class="app-container main-card card container wrapper" style="flex:1; overflow-y:auto; margin:0; max-width:100%; border-radius:0; padding:24px; background:var(--bg-primary);">
-        <div class="tab-content-container tab-content">
+      <div class="app-layout" style="display: flex; height: 100%; width: 100%;">
+        
+        <!-- True Left Sidebar -->
+        <aside class="sidebar" style="width: 280px; background: var(--bg-card); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; box-shadow: 2px 0 10px rgba(0,0,0,0.02); z-index: 10;">
+          <!-- Logo in Sidebar -->
+          <div class="sidebar-logo" style="margin-bottom: 40px; display: flex; align-items: center; justify-content: center;">
+            <img src="/logo.png" alt="Quadrobay" class="company-logo" style="height: 48px; width: auto; object-fit: contain;">
+          </div>
+          
+          <!-- Modules LOV -->
+          <div class="sidebar-nav">
+            <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 700;">Modules</h3>
+            <select id="module-sidebar-select" class="person-input" style="width: 100%; font-size: 15px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); cursor: pointer; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); letter-spacing: normal;" onchange="window.switchModule(this.value)">
+              <option value="screen-dashboard">🏢 Core HR</option>
+              <option value="screen-absence">🏖️ Absence Management</option>
+              <option value="screen-procurement">📦 Procurement</option>
+            </select>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary);">
+          
+          <!-- Top Right Header -->
+          <header class="top-header" style="height: 80px; display: flex; justify-content: flex-end; align-items: center; padding: 0 32px; background: transparent; border-bottom: 1px solid rgba(0,0,0,0.03); box-shadow: none; backdrop-filter: none;">
+            <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
+              <span id="user-badge" class="user-badge" style="background: var(--bg-card); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border-color);"></span>
+              <button class="theme-toggle" onclick="openWhatsAppSettings()" title="WhatsApp Bot Settings" style="font-size: 16px; background: var(--bg-card);">💬</button>
+              <button class="theme-toggle" onclick="logout()" title="Logout" style="background: var(--bg-card);">🚪</button>
+              <button id="themeToggle" class="theme-toggle" style="display: none;">🌙</button>
+              <span class="version-badge" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 6px 12px;">Voice Assistant v1.0</span>
+            </div>
+          </header>
+
+          <!-- Scrollable App Area -->
+          <main id="app" class="app-container main-card card container wrapper" style="flex: 1; overflow-y: auto; padding: 32px; margin: 0; max-width: 100%; border-radius: 0; background: transparent; box-shadow: none;">
+            <div class="tab-content-container tab-content">
         
         <!-- DASHBOARD (Home) -->
         <section id="screen-dashboard" class="screen active">
@@ -1348,6 +1352,7 @@
       </div>
 
     </main>
+    </div>
     </div>
     </div>
     <!-- WhatsApp Settings Modal -->
