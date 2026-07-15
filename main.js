@@ -34,18 +34,16 @@ if (window.trustedTypes && window.trustedTypes.createPolicy) {
   }
 }
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? '/api'
-  : 'https://voice-action-server.onrender.com/api';
+const API_BASE = '/api';
 
 // Multi-company support configuration
 const COMPANY_ORACLE_URLS = {
   'companya': 'https://fa-eubg-test-saasfademo1.ds-fa.oraclepdemos.com',
   'companyb': 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com',
-  'dabiqy': 'https://dabiqy.ds-fa.oraclepdemos.com'
+  'dabiqy': 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com'
 };
 
-const DEFAULT_ORACLE_BASE_URL = 'https://dabiqy.ds-fa.oraclepdemos.com';
+const DEFAULT_ORACLE_BASE_URL = 'https://fa-euth-dev58-saasfademo1.ds-fa.oraclepdemos.com';
 
 // Read optional company code from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
