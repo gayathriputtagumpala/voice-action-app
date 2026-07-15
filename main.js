@@ -2759,6 +2759,8 @@ function addToAuditLog(entry) {
 window.goHome = function() {
   hideActionTabs();
   switchTab('screen-dashboard');
+  const select = document.getElementById('module-sidebar-select');
+  if (select) select.value = 'screen-dashboard';
   showHomeModules();
   resetApp();
 }
