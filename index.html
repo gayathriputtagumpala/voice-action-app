@@ -84,24 +84,13 @@
       <!-- True Top Header & Navigation -->
       <header class="top-header" style="height: 90px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; background: transparent; border-bottom: none; z-index: 20;">
         
-        <!-- Left: Logo & Dropdown -->
-        <div class="header-left" style="display: flex; align-items: center; gap: 40px;">
+        <!-- Left: Logo -->
+        <div class="header-left" style="display: flex; align-items: center;">
           <img src="/logo.png" alt="Quadrobay" class="company-logo" style="height: 44px; width: auto; object-fit: contain;">
-          
-          <!-- Modules LOV (Upside) -->
-          <div class="modules-nav-bar" style="display: flex; align-items: center; gap: 16px;">
-            <h3 style="font-size: 15px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-secondary); margin: 0; font-weight: 700;">Modules:</h3>
-            <select id="module-sidebar-select" class="person-input" style="width: 280px; font-size: 16px; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); background: var(--bg-card); color: var(--text-primary); cursor: pointer; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-weight: 600;" onchange="window.switchModule(this.value)">
-              <option value="screen-dashboard">🏢 Core HR</option>
-              <option value="screen-absence">🏖️ Absence Management</option>
-              <option value="screen-procurement">📦 Procurement</option>
-            </select>
-          </div>
         </div>
 
         <!-- Right: Actions -->
         <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
-          <button class="theme-toggle" onclick="goHome()" title="Home" style="font-size: 14px; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">🏠 Home</button>
           <span id="user-badge" class="user-badge" style="background: var(--bg-card); padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border-color);"></span>
           <button class="theme-toggle" onclick="openWhatsAppSettings()" title="WhatsApp Bot Settings" style="font-size: 18px; background: var(--bg-card); border: 1px solid var(--border-color);">💬</button>
           <button id="themeToggle" class="theme-toggle" title="Toggle Dark/Light Mode" style="font-size: 18px; background: var(--bg-card); border: 1px solid var(--border-color);">🌙</button>
