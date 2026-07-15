@@ -233,7 +233,7 @@ serverJs = serverJs.replace(routeRegex, (match, signature, path, body) => {
   
   const headersInjection = `
   const oracleAuth = req.headers['x-oracle-auth'] || 
-    'Basic dXNlcl9yMTRfYTJmOmhUOD8yc1U/';
+    'Basic Q1JNLlNUVURFTlQwNzpmdXNpb24xMiM=';
   const oracleBaseUrl = req.headers['x-oracle-url'] || 
     'https://fa-eubg-test-saasfademo1.ds-fa.oraclepdemos.com';`;
     
