@@ -1,45 +1,26 @@
 /* Oracle Fusion Redwood Design System Colors */
 :root {
-  --bg-primary: #1f1e1d; /* Redwood Bark (Dark theme default) */
-  --bg-card: #2d2b29; /* Redwood Card background */
-  --bg-card-hover: rgba(30, 128, 91, 0.15); /* Redwood Green hover tint */
-  --border-color: rgba(255, 255, 255, 0.08);
-  --text-primary: #faf9f8; /* Redwood Off-white */
-  --text-secondary: #b3b0ad; /* Redwood Muted Grey */
-  --header-bg: #171615; /* Redwood Deep Bark */
+  --bg-primary: #fff5f7; /* Very light pink background */
+  --bg-card: #ffffff; /* White cards for clean contrast */
+  --bg-card-hover: rgba(236, 72, 153, 0.04); /* Pink hover tint */
+  --border-color: rgba(236, 72, 153, 0.15); /* Soft pink border */
+  --text-primary: #4a3b42; /* Soft dark mauve for text */
+  --text-secondary: #8c7a83; /* Muted mauve for secondary text */
+  --header-bg: #ffffff; /* White header */
   
-  --accent-color: #1e805b; /* Redwood Emerald Green */
-  --accent-hover: #155e42;
-  --accent-light: rgba(30, 128, 91, 0.15);
+  --accent-color: #ec4899; /* Vibrant Pink Accent */
+  --accent-hover: #db2777;
+  --accent-light: rgba(236, 72, 153, 0.1);
   
-  --success-color: #2e7d32;
-  --success-light: rgba(46, 125, 50, 0.1);
-  --danger-color: #c62828;
-  --danger-light: rgba(198, 40, 40, 0.1);
-  --warning-color: #f1b13f;
-  --warning-light: rgba(241, 177, 63, 0.1);
+  --success-color: #10b981;
+  --success-light: rgba(16, 185, 129, 0.1);
+  --danger-color: #ef4444;
+  --danger-light: rgba(239, 68, 68, 0.1);
+  --warning-color: #f59e0b;
+  --warning-light: rgba(245, 158, 11, 0.1);
 }
 
-[data-theme="light"] {
-  --bg-primary: #f3f2f1; /* Redwood Sand */
-  --bg-card: #ffffff; /* White card */
-  --bg-card-hover: rgba(30, 128, 91, 0.06); /* Redwood Green hover tint */
-  --border-color: rgba(0, 0, 0, 0.08);
-  --text-primary: #2c2a29; /* Dark Bark text */
-  --text-secondary: #605e5c; /* Muted Dark Warm Grey */
-  --header-bg: #232220; /* Keep Header dark dark bark like standard Oracle Fusion */
-  
-  --accent-color: #1e805b;
-  --accent-hover: #155e42;
-  --accent-light: rgba(30, 128, 91, 0.08);
-  
-  --success-color: #2e7d32;
-  --success-light: rgba(46, 125, 50, 0.1);
-  --danger-color: #c62828;
-  --danger-light: rgba(198, 40, 40, 0.1);
-  --warning-color: #f1b13f;
-  --warning-light: rgba(241, 177, 63, 0.1);
-}
+/* Light theme disabled to maintain pink theme */
 
 * {
   margin: 0;
