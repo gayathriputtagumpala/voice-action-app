@@ -87,21 +87,31 @@
       </div>
     </header>
 
-    <!-- Navigation Tabs (Hidden initially) -->
-    <nav class="tabs tab-bar">
-      <button class="tab-btn active" data-target="screen-dashboard">🏢 Core HR</button>
-      <button class="tab-btn" data-target="screen-absence">🏖️ Absence</button>
-      <button class="tab-btn" data-target="screen-procurement">📦 Procurement</button>
-      <button class="tab-btn" data-target="screen-details">🔍 Profile Details</button>
-      <button class="tab-btn" data-target="screen-home">🎤 Voice Input</button>
-      <button class="tab-btn" data-target="screen-confirmation" disabled>📋 Confirm</button>
-      <button class="tab-btn" data-target="screen-result" disabled>✅ Result</button>
-      <button class="tab-btn" data-target="screen-audit">📜 Logs</button>
-    </nav>
+    <div class="main-layout" style="display:flex; flex:1; height:calc(100vh - 80px);">
+      <aside class="sidebar" style="width:280px; background:var(--bg-card); border-right:1px solid var(--border-color); padding:24px; display:flex; flex-direction:column; gap:16px;">
+        <h3 style="font-size:18px; margin:0; color:var(--text-primary);">Modules</h3>
+        <select id="module-sidebar-select" class="person-input" style="width:100%; font-size:14px; padding:12px; letter-spacing:normal;" onchange="window.switchModule(this.value)">
+          <option value="screen-dashboard">🏢 Core HR</option>
+          <option value="screen-absence">🏖️ Absence</option>
+          <option value="screen-procurement">📦 Procurement</option>
+        </select>
+      </aside>
+      
+      <!-- Navigation Tabs (Hidden initially) -->
+      <nav class="tabs tab-bar" style="display:none;">
+        <button class="tab-btn active" data-target="screen-dashboard">🏢 Core HR</button>
+        <button class="tab-btn" data-target="screen-absence">🏖️ Absence</button>
+        <button class="tab-btn" data-target="screen-procurement">📦 Procurement</button>
+        <button class="tab-btn" data-target="screen-details">🔍 Profile Details</button>
+        <button class="tab-btn" data-target="screen-home">🎤 Voice Input</button>
+        <button class="tab-btn" data-target="screen-confirmation" disabled>📋 Confirm</button>
+        <button class="tab-btn" data-target="screen-result" disabled>✅ Result</button>
+        <button class="tab-btn" data-target="screen-audit">📜 Logs</button>
+      </nav>
 
-    <!-- Main App Container -->
-    <main id="app" class="app-container main-card card container wrapper">
-      <div class="tab-content-container tab-content">
+      <!-- Main App Container -->
+      <main id="app" class="app-container main-card card container wrapper" style="flex:1; overflow-y:auto; background-color: #ffe4e1 !important; margin:0; max-width:100%; border-radius:0;">
+        <div class="tab-content-container tab-content">
         
         <!-- DASHBOARD (Home) -->
         <section id="screen-dashboard" class="screen active">
@@ -1338,6 +1348,7 @@
       </div>
 
     </main>
+    </div>
     </div>
     <!-- WhatsApp Settings Modal -->
     <div id="whatsapp-settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center;">

@@ -4522,3 +4522,4 @@ window.initiateHRAction = function(btn, actionName) {
   }, 800);
 }
 
+window.switchModule = function(target) { const screens = document.querySelectorAll('.screen'); screens.forEach(s => s.classList.remove('active')); const targetScreen = document.getElementById(target); if (targetScreen) targetScreen.classList.add('active'); };
